@@ -1,0 +1,39 @@
+{
+  "name": "aweitian/pmcai-route",
+  "description": "pmcai 路由",
+  "type": "project",
+  "keywords": [
+    "aweitian",
+    "tiananwei",
+    "prefix",
+    "module",
+    "control",
+    "action",
+    "pathinfo",
+    "route"
+  ],
+  "homepage": "https://github.com/aweitian/pmcai-route",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "awei.tian@qq.com",
+      "email": "531164479@qq.com"
+    }
+  ],
+  "minimum-stability": "stable",
+  "require": {
+    "php": ">=5.4.0",
+    "aweitian/contract-module":"~1.0",
+    "aweitian/log":"dev-master",
+    "aweitian/url-parse":"dev-master"
+  },
+  "require-dev": {
+        "phpunit/phpunit": "~5.0"
+  },
+  "autoload": {
+    "files": [],
+    "psr-4": {
+      "Tian\\": "src/"
+    }
+  }
+}
