@@ -1,6 +1,6 @@
 {
-  "name": "aweitian/pmcai-route",
-  "description": "pmcai 路由",
+  "name": "aweitian/route",
+  "description": "常用 路由",
   "type": "project",
   "keywords": [
     "aweitian",
@@ -12,7 +12,7 @@
     "pathinfo",
     "route"
   ],
-  "homepage": "https://github.com/aweitian/pmcai-route",
+  "homepage": "https://github.com/aweitian/route",
   "license": "MIT",
   "authors": [
     {
@@ -23,7 +23,6 @@
   "minimum-stability": "stable",
   "require": {
     "php": ">=5.4.0",
-    "aweitian/contract-module":"~1.0",
     "aweitian/log":"dev-master",
     "aweitian/url-parse":"dev-master"
   },

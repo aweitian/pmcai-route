@@ -15,6 +15,7 @@ class RegexpMatch {
 	private $rt;
 	
 	/**
+	 * 这里的参数不一定是PMCAI的参数，也可以是别的参数
 	 * [
 	 * 		"^\d+$" => [
 	 * 			"http_entry" => "",
