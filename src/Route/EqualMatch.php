@@ -10,20 +10,22 @@ namespace Tian\Route;
 
 class EqualMatch {
 	use \Tian\LoggerTrait;
-	public $matchedUrlPathInitArgs;
+	public $matchedUrlParseArgs;
 	public $url;
 	private $rt;
 	
 	/**
 	 * 这里的参数不一定是PMCAI的参数，也可以是别的参数
+	 * 在这里，它就是数据，没有特殊的意义
 	 * [
-	 * 		"/path/to/dst" => [
-	 * 			"http_entry" => "",
-	 * 			"mask" => "ca",
-	 * 		],
-	 * 		...
+	 * "/path/to/dst" => [
+	 * "http_entry" => "",
+	 * "mask" => "ca",
+	 * ],
+	 * ...
 	 * ]
-	 * @param array $rt
+	 * 
+	 * @param array $rt        	
 	 */
 	public function __construct(array $rt) {
 		$this->rt = $rt;
@@ -39,8 +41,8 @@ class EqualMatch {
 		foreach ( $this->rt as $key => $item ) {
 			if ($key == $this->url) {
 				! is_null ( $this->logger ) && $this->logger->debug ( "route://equal route matched." );
-				$this->matchedUrlPathInitArgs = $item;
-				! is_null ( $this->logger ) && $this->logger->debug ( "module://equal route args is " . var_export ( $this->matchedUrlPathInitArgs, true ) );
+				$this->matchedUrlParseArgs = $item;
+				! is_null ( $this->logger ) && $this->logger->debug ( "module://equal route args is " . var_export ( $this->matchedUrlParseArgs, true ) );
 				return true;
 			}
 		}
