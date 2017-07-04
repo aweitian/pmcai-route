@@ -32,12 +32,12 @@ class StartWithMatch {
 	}
 	
 	/**
-	 *
+	 * @param string $path-HTTP的PATH部分
 	 * @return bool
 	 */
-	public function match($requestUri) {
-		! is_null ( $this->logger ) && $this->logger->debug ( "module://URL is $requestUri" );
-		$this->url = $requestUri;
+	public function match($path) {
+		! is_null ( $this->logger ) && $this->logger->debug ( "module://URL is $path" );
+		$this->url = $path;
 		foreach ( $this->rt as $key => $item ) {
 			if ((($temp = strlen ( $key ) - strlen ( "/" )) >= 0 && strpos ( $key, "/", $temp ) !== false)) {
 				if (strpos ( $this->url, $key ) === 0) {
