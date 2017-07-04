@@ -3,7 +3,8 @@
 /**
  * @Author: awei.tian
  * @Date: 2016年12月7日
- * 		
+ * 匹配使用preg_match,匹配结果的数组
+ * $matches[0] 将包含与整个模式匹配的文本，$matches[1] 将包含与第一个捕获的括号中的子模式所匹配的文本，以此类推		
  * 依赖:
  */
 namespace Tian\Route;
@@ -34,12 +35,13 @@ class RegexpMatch {
 	}
 	
 	/**
-	 *
+	 * 
+	 * @param string $path-HTTP的PATH部分
 	 * @return bool
 	 */
-	public function match($requestUri) {
-		! is_null ( $this->logger ) && $this->logger->debug ( "module://URL is $requestUri" );
-		$this->url = $requestUri;
+	public function match($path) {
+		! is_null ( $this->logger ) && $this->logger->debug ( "module://URL is $path" );
+		$this->url = $path;
 		foreach ( $this->rt as $key => $item ) {
 			if (preg_match ( "#^{$key}\$#", $this->url, $this->matches )) {
 				! is_null ( $this->logger ) && $this->logger->debug ( "route://regexp route matched." );

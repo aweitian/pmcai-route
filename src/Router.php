@@ -74,11 +74,21 @@ class Router {
 		return $this->addRoute ( "default", $arg );
 	}
 	/**
-	 *
+	 * 返回路由实例
+	 * @param string $name
+	 * @return route
+	 */
+	public function getRoute($name) {
+		return $this->routeInsts[$name];
+	}
+	/**
+	 * 参数是httprequest 的 requestUri
 	 * @param string $url        	
 	 * @return string
 	 */
 	public function route($url) {
+		$arr = explode("?", $url);
+		$url = $arr[0];
 		foreach ( $this->routeTable as $rn => $rt ) {
 			if (array_key_exists ( $rn, $this->routeInsts )) {
 				$route = $this->routeInsts [$rn];

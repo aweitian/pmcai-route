@@ -29,13 +29,13 @@ class AllMatch {
 	}
 	
 	/**
-	 *
+	 * @param string $path-HTTP的PATH部分
 	 * @return bool
 	 */
-	public function match($requestUri) {
-		! is_null ( $this->logger ) && $this->logger->debug ( "module://URL is $requestUri" );
+	public function match($path) {
+		! is_null ( $this->logger ) && $this->logger->debug ( "module://URL is $path" );
 		! is_null ( $this->logger ) && $this->logger->debug ( "module://default route args is " . var_export ( $this->rt, true ) );
-		$this->url = $requestUri;
+		$this->url = $path;
 		$this->matchedUrlParseArgs = $this->rt;
 		// ! is_null ( $this->logger ) && $this->logger->debug ( "module://pmcai C:" . $this->pmcai->control . ",A:" . $this->pmcai->action );
 		return true;
