@@ -111,13 +111,13 @@ class UrlMatcher implements UrlMatcherInterface
                 }
             }
             $status = $this->handleRouteRequirements($pathinfo, $name, $route);
-            if (self::ROUTE_MATCH === $status[0]) {
-                return $status[1];
-            }
+//            if (self::ROUTE_MATCH === $status[0]) {
+//                return $status[1];
+//            }
             if (self::REQUIREMENT_MISMATCH === $status[0]) {
                 continue;
             }
-            return $this->getAttributes($route, $name, array_replace($matches, $hostMatches));
+            return $this->getAttributes($route, $name, array_replace($matches, $hostMatches, isset($status[1]) ? $status[1] : array()));
         }
     }
     /**
