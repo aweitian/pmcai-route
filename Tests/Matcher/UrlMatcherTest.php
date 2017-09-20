@@ -80,6 +80,18 @@ class UrlMatcherTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    public function testMatchResult()
+    {
+        $router = new RouteCollection();
+        $router->get('/{foo}/{bar}',function (){
+            return "abc";
+        });
+        //$collection->add('bar', new Route('/{foo}/{bar}', array('foo' => 'foo', 'bar' => 'bar'), array()));
+        $response = $router->dispatch(Request::create("/a/b"));
+
+        $this->assertEquals("abc",$response->getContent());
+    }
+
     public function testMatch()
     {
         // test the patterns are matched and parameters are returned

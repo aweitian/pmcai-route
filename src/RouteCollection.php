@@ -1,13 +1,16 @@
 <?php
 
 /**
- * 
+ *
  * @date 2017/7/1 08:54:58
  * 处理路由表
- * 
+ *
  */
+
 namespace Tian\Route;
+
 use Closure;
+use function dd\dd;
 use SebastianBergmann\RecursionContext\Exception;
 use \Tian\Http\Request;
 use \Tian\Http\Response;
@@ -16,7 +19,8 @@ use \Tian\Route\Matcher\UrlMatcher;
 use \Tian\Route\Exception\MethodNotAllowedException;
 use \Tian\Route\Exception\ResourceNotFoundException;
 
-class RouteCollection implements \IteratorAggregate, \Countable {
+class RouteCollection implements \IteratorAggregate, \Countable
+{
     protected $routes = [];
     /**
      * @var array
@@ -41,6 +45,7 @@ class RouteCollection implements \IteratorAggregate, \Countable {
             $this->routes[$name] = clone $route;
         }
     }
+
     /**
      * Gets the current RouteCollection as an Iterator that includes all routes.
      *
@@ -64,6 +69,7 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     {
         return count($this->routes);
     }
+
     /**
      * Returns all routes in this collection.
      *
@@ -73,11 +79,12 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     {
         return $this->routes;
     }
+
     /**
      * Adds a route.
      *
-     * @param string $name  The route name
-     * @param Route  $route A Route instance
+     * @param string $name The route name
+     * @param Route $route A Route instance
      */
     public function add($name, Route $route)
     {
@@ -107,7 +114,7 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Returns an array of resources loaded to build this collection.
      *
-     * @return An array of resources
+     * @return array of resources
      */
     public function getResources()
     {
@@ -118,8 +125,8 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Add a new route to the collection.
      *
-     * @param  string  $pattern
-     * @param  mixed   $action
+     * @param  string $pattern
+     * @param  mixed $action
      * @return \Tian\Route\Route
      */
     public function get($pattern, $action)
@@ -130,8 +137,8 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Add a new route to the collection.
      *
-     * @param  string  $pattern
-     * @param  mixed   $action
+     * @param  string $pattern
+     * @param  mixed $action
      * @return \Tian\Route\Route
      */
     public function post($pattern, $action)
@@ -142,8 +149,8 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Add a new route to the collection.
      *
-     * @param  string  $pattern
-     * @param  mixed   $action
+     * @param  string $pattern
+     * @param  mixed $action
      * @return \Tian\Route\Route
      */
     public function put($pattern, $action)
@@ -154,8 +161,8 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Add a new route to the collection.
      *
-     * @param  string  $pattern
-     * @param  mixed   $action
+     * @param  string $pattern
+     * @param  mixed $action
      * @return \Tian\Route\Route
      */
     public function patch($pattern, $action)
@@ -166,8 +173,8 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Add a new route to the collection.
      *
-     * @param  string  $pattern
-     * @param  mixed   $action
+     * @param  string $pattern
+     * @param  mixed $action
      * @return \Tian\Route\Route
      */
     public function delete($pattern, $action)
@@ -178,8 +185,8 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Add a new route to the collection.
      *
-     * @param  string  $pattern
-     * @param  mixed   $action
+     * @param  string $pattern
+     * @param  mixed $action
      * @return \Tian\Route\Route
      */
     public function options($pattern, $action)
@@ -190,9 +197,9 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Add a new route to the collection.
      *
-     * @param  string  $method
-     * @param  string  $pattern
-     * @param  mixed   $action
+     * @param  string $method
+     * @param  string $pattern
+     * @param  mixed $action
      * @return \Tian\Route\Route
      */
     public function match($method, $pattern, $action)
@@ -203,8 +210,8 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Add a new route to the collection.
      *
-     * @param  string  $pattern
-     * @param  mixed   $action
+     * @param  string $pattern
+     * @param  mixed $action
      * @return \Tian\Route\Route
      */
     public function any($pattern, $action)
@@ -225,57 +232,31 @@ class RouteCollection implements \IteratorAggregate, \Countable {
         // First we will call the "before" global middlware, which we'll give a chance
         // to override the normal requests process when a response is returned by a
         // middleware. Otherwise we'll call the route just like a normal request.
-        $this->currentRoute = $route = $this->findRoute($request);
+        $route = $this->findRoute($request);
 
-        $response = $route->run($request);
+        $response = $this->run($request, $route);
 
         return $response;
     }
-//
-//    /**
-//     * Execute the route and return the response.
-//     *
-//     * @param  Request  $request
-//     * @return mixed
-//     */
-//    public function run(Request $request)
-//    {
-//        $this->parsedParameters = null;
-//
-//        // We will only call the router callable if no "before" middlewares returned
-//        // a response. If they do, we will consider that the response to requests
-//        // so that the request "lifecycle" will be easily halted for filtering.
-//        $response = $this->callBeforeFilters($request);
-//
-//        if ( ! isset($response))
-//        {
-//            $response = $this->callCallable();
-//        }
-//
-//        // If the response is from a filter we want to note that so that we can skip
-//        // the "after" filters which should only run when the route method is run
-//        // for the incoming request. Otherwise only app level filters will run.
-//        else
-//        {
-//            $fromFilter = true;
-//        }
-//
-//        $response = $this->router->prepare($response, $request);
-//
-//        // Once we have the "prepared" response, we will iterate through every after
-//        // filter and call each of them with the request and the response so they
-//        // can perform any final work that needs to be done after a route call.
-//        if ( ! isset($fromFilter))
-//        {
-//            $this->callAfterFilters($request, $response);
-//        }
-//
-//        return $response;
-//    }
+
+    /**
+     * Execute the route and return the response.
+     *
+     * @param  Request $request
+     * @param  Route $route
+     * @return Response
+     */
+    protected function run(Request $request, Route $route)
+    {
+        $resolver = new ControllerResolver();
+
+        return $resolver->resolver($request, $route);
+    }
+
     /**
      * Match the given request to a route object.
      *
-     * @param  Request  $request
+     * @param  Request $request
      * @return Route
      */
     protected function findRoute(Request $request)
@@ -283,8 +264,7 @@ class RouteCollection implements \IteratorAggregate, \Countable {
         // We will catch any exceptions thrown during routing and convert it to a
         // HTTP Kernel equivalent exception, since that is a more generic type
         // that's used by the Illuminate foundation framework for responses.
-        try
-        {
+        try {
             $path = $request->getPathInfo();
 
             $parameters = $this->getUrlMatcher($request)->match($path);
@@ -293,21 +273,18 @@ class RouteCollection implements \IteratorAggregate, \Countable {
             // The Symfony routing component's exceptions implement this interface we
             // can type-hint it to make sure we're only providing special handling
             // for those exceptions, and not other random exceptions that occur.
-        catch (MethodNotAllowedException $e)
-        {
+        catch (MethodNotAllowedException $e) {
+            $this->handleRoutingException($e);
+        } catch (ResourceNotFoundException $e) {
             $this->handleRoutingException($e);
         }
-        catch (ResourceNotFoundException $e)
-        {
-            $this->handleRoutingException($e);
-        }
-
+//var_dump($parameters['_route'],array_keys($this->routes));
         $route = $this->routes[$parameters['_route']];
 
         // If we found a route, we will grab the actual route objects out of this
         // route collection and set the matching parameters on the instance so
         // we will easily access them later if the route action is executed.
-        $route->setParameters($parameters);
+        $request->attributes->add($parameters);
 
         return $route;
     }
@@ -323,10 +300,11 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     {
         throw $e;
     }
+
     /**
      * Create a new URL matcher instance.
      *
-     * @param  Request  $request
+     * @param  Request $request
      * @return UrlMatcher
      */
     protected function getUrlMatcher(Request $request)
@@ -411,9 +389,9 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Create a new route instance.
      *
-     * @param  string  $method
-     * @param  string  $pattern
-     * @param  mixed   $action
+     * @param  string $method
+     * @param  string $pattern
+     * @param  mixed $action
      * @return \Tian\Route\Route
      */
     protected function createRoute($method, $pattern, $action)
@@ -421,8 +399,7 @@ class RouteCollection implements \IteratorAggregate, \Countable {
         // We will force the action parameters to be an array just for convenience.
         // This will let us examine it for other attributes like middlewares or
         // a specific HTTP schemes the route only responds to, such as HTTPS.
-        if ( ! is_array($action))
-        {
+        if (!is_array($action)) {
             $action = $this->parseAction($action);
         }
 
@@ -432,8 +409,7 @@ class RouteCollection implements \IteratorAggregate, \Countable {
         // without having to specify them all for every route that is defined.
         list($pattern, $optional) = $this->getOptional($pattern);
 
-        if (isset($action['prefix']))
-        {
+        if (isset($action['prefix'])) {
             $prefix = $action['prefix'];
 
             $pattern = $this->addPrefix($pattern, $prefix);
@@ -444,11 +420,9 @@ class RouteCollection implements \IteratorAggregate, \Countable {
         // routes we'll also set those requirements as well such as defaults.
         $route = new Route($pattern);
         $route->setOptions(array(
-
             '_call' => $action,
-
         ));
-            //->addRequirements($pattern);
+        //->addRequirements($pattern);
 
         $route->setRequirement('_method', $method);
 
@@ -467,7 +441,7 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Parse the given route action into array form.
      *
-     * @param  mixed  $action
+     * @param  mixed $action
      * @return array
      */
     protected function parseAction($action)
@@ -475,12 +449,9 @@ class RouteCollection implements \IteratorAggregate, \Countable {
         // If the action is just a Closure we'll stick it in an array and just send
         // it back out. However if it's a string we'll just assume it's meant to
         // route into a controller action and change it to a controller array.
-        if ($action instanceof Closure)
-        {
+        if ($action instanceof Closure) {
             return array($action);
-        }
-        elseif (is_string($action))
-        {
+        } elseif (is_string($action)) {
             return array('uses' => $action);
         }
 
@@ -490,7 +461,7 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Modify the pattern and extract optional parameters.
      *
-     * @param  string  $pattern
+     * @param  string $pattern
      * @return array
      */
     protected function getOptional($pattern)
@@ -502,11 +473,10 @@ class RouteCollection implements \IteratorAggregate, \Countable {
         // For each matching value, we will extract the name of the optional values
         // and add it to our array, then we will replace the place-holder to be
         // a valid place-holder minus this optional indicating question mark.
-        foreach ($matches[0] as $key => $value)
-        {
+        foreach ($matches[0] as $key => $value) {
             $optional[] = $name = $matches[1][$key];
 
-            $pattern = str_replace($value, '{'.$name.'}', $pattern);
+            $pattern = str_replace($value, '{' . $name . '}', $pattern);
         }
 
         return array($pattern, $optional);
@@ -515,13 +485,13 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Add the given prefix to the given URI pattern.
      *
-     * @param  string  $pattern
-     * @param  string  $prefix
+     * @param  string $pattern
+     * @param  string $prefix
      * @return string
      */
     protected function addPrefix($pattern, $prefix)
     {
-        $pattern = trim($prefix, '/').'/'.ltrim($pattern, '/');
+        $pattern = trim($prefix, '/') . '/' . ltrim($pattern, '/');
 
         return trim($pattern, '/');
     }
@@ -529,16 +499,16 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Get the name of the route.
      *
-     * @param  string  $method
-     * @param  string  $pattern
-     * @param  array   $action
+     * @param  string $method
+     * @param  string $pattern
+     * @param  array $action
      * @return string
      */
     protected function getName($method, $pattern, array $action)
     {
         if (isset($action['as'])) return $action['as'];
 
-        $domain = isset($action['domain']) ? $action['domain'].' ' : '';
+        $domain = isset($action['domain']) ? $action['domain'] . ' ' : '';
 
         return "{$domain}{$method} {$pattern}";
     }
@@ -546,9 +516,9 @@ class RouteCollection implements \IteratorAggregate, \Countable {
     /**
      * Set the attributes and requirements on the route.
      *
-     * @param  \Tian\Route\Route  $route
-     * @param  array  $action
-     * @param  array  $optional
+     * @param  \Tian\Route\Route $route
+     * @param  array $action
+     * @param  array $optional
      * @return void
      */
     protected function setAttributes(Route $route, $action, $optional)
@@ -556,34 +526,29 @@ class RouteCollection implements \IteratorAggregate, \Countable {
         // First we will set the requirement for the HTTP schemes. Some routes may
         // only respond to requests using the HTTPS scheme, while others might
         // respond to all, regardless of the scheme, so we'll set that here.
-        if (in_array('https', $action))
-        {
+        if (in_array('https', $action)) {
             $route->setRequirement('_scheme', 'https');
         }
 
-        if (in_array('http', $action))
-        {
+        if (in_array('http', $action)) {
             $route->setRequirement('_scheme', 'http');
         }
 
         // If there is a "uses" key on the route it means it is using a controller
         // instead of a Closures route. So, we'll need to set that as an option
         // on the route so we can easily do reverse routing ot the route URI.
-        if (isset($action['uses']))
-        {
+        if (isset($action['uses'])) {
             $route->setOption('_uses', $action['uses']);
         }
 
-        if (isset($action['domain']))
-        {
+        if (isset($action['domain'])) {
             $route->setHost($action['domain']);
         }
 
         // Finally we will go through and set all of the default variables to null
         // so the developer doesn't have to manually specify one each time they
         // are declared on a route. This is simply for developer convenience.
-        foreach ($optional as $key)
-        {
+        foreach ($optional as $key) {
             $route->setDefault($key, null);
         }
     }
