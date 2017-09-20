@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Tian\Routing\Exception;
+namespace Tian\Route\Exception;
 
 /**
  * The resource was found but the request method is not allowed.

@@ -9,9 +9,9 @@
  * file that was distributed with this source code.
  */
 
-namespace Tian\Routing\Tests;
+namespace Tian\Route\Tests;
 
-use Tian\Routing\Route;
+use Tian\Route\Route;
 
 class RouteTest extends \PHPUnit_Framework_TestCase
 {
@@ -52,14 +52,14 @@ class RouteTest extends \PHPUnit_Framework_TestCase
         $route = new Route('/{foo}');
         $route->setOptions(array('foo' => 'bar'));
         $this->assertEquals(array_merge(array(
-        'compiler_class'     => 'Tian\\Routing\\RouteCompiler',
+        'compiler_class'     => 'Tian\\Route\\RouteCompiler',
         ), array('foo' => 'bar')), $route->getOptions(), '->setOptions() sets the options');
         $this->assertEquals($route, $route->setOptions(array()), '->setOptions() implements a fluent interface');
 
         $route->setOptions(array('foo' => 'foo'));
         $route->addOptions(array('bar' => 'bar'));
         $this->assertEquals($route, $route->addOptions(array()), '->addOptions() implements a fluent interface');
-        $this->assertEquals(array('foo' => 'foo', 'bar' => 'bar', 'compiler_class' => 'Tian\\Routing\\RouteCompiler'), $route->getOptions(), '->addDefaults() keep previous defaults');
+        $this->assertEquals(array('foo' => 'foo', 'bar' => 'bar', 'compiler_class' => 'Tian\\Route\\RouteCompiler'), $route->getOptions(), '->addDefaults() keep previous defaults');
     }
 
     public function testOption()
@@ -195,7 +195,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase
     public function testCompile()
     {
         $route = new Route('/{foo}');
-        $this->assertInstanceOf('Tian\Routing\CompiledRoute', $compiled = $route->compile(), '->compile() returns a compiled route');
+        $this->assertInstanceOf('Tian\Route\CompiledRoute', $compiled = $route->compile(), '->compile() returns a compiled route');
         $this->assertSame($compiled, $route->compile(), '->compile() only compiled the route once if unchanged');
         $route->setRequirement('foo', '.*');
         $this->assertNotSame($compiled, $route->compile(), '->compile() recompiles if the route was modified');

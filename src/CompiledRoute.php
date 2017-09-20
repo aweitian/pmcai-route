@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Tian\Routing;
+namespace Tian\Route;
 
 /**
  * CompiledRoutes are returned by the RouteCompiler class.

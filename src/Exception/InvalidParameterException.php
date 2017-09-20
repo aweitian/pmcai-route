@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Tian\Routing\Exception;
+namespace Tian\Route\Exception;
 
 /**
  * Exception thrown when a parameter is not valid.

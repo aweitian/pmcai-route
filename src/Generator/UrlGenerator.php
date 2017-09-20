@@ -11,11 +11,11 @@
 
 namespace Tian\Routing\Generator;
 
-use Tian\Routing\RouteCollection;
-use Tian\Routing\RequestContext;
-use Tian\Routing\Exception\InvalidParameterException;
-use Tian\Routing\Exception\RouteNotFoundException;
-use Tian\Routing\Exception\MissingMandatoryParametersException;
+use Tian\Route\RouteCollection;
+use Tian\Http\RequestContext;
+use Tian\Route\Exception\InvalidParameterException;
+use Tian\Route\Exception\RouteNotFoundException;
+use Tian\Route\Exception\MissingMandatoryParametersException;
 use Psr\Log\LoggerInterface;
 
 /**

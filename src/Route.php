@@ -1,19 +1,12 @@
 <?php
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-namespace Tian\Routing;
 /**
- * A Route describes a route and its parameters.
- *
- * @author Fabien Potencier <fabien@symfony.com>
- * @author Tobias Schultze <http://tobion.de>
+ * Created by PhpStorm.
+ * User: Administrator
+ * Date: 2017/9/18
+ * Time: 12:26
  */
+namespace Tian\Route;
+
 class Route implements \Serializable
 {
     /**
@@ -258,7 +251,7 @@ class Route implements \Serializable
     public function setOptions(array $options)
     {
         $this->options = array(
-            'compiler_class' => 'Tian\\Routing\\RouteCompiler',
+            'compiler_class' => 'Tian\\Route\\RouteCompiler',
         );
         return $this->addOptions($options);
     }

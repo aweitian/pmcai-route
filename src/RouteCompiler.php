@@ -9,14 +9,14 @@
  * file that was distributed with this source code.
  */
 
-namespace Tian\Routing;
+namespace Tian\Route;
 /**
  * RouteCompiler compiles Route instances to CompiledRoute instances.
  *
  * @author Fabien Potencier <fabien@symfony.com>
  * @author Tobias Schultze <http://tobion.de>
  */
-class RouteCompiler implements RouteCompilerInterface
+class RouteCompiler
 {
     const REGEX_DELIMITER = '#';
     /**
