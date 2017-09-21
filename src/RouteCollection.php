@@ -10,8 +10,7 @@
 namespace Tian\Route;
 
 use Closure;
-use function dd\dd;
-use SebastianBergmann\RecursionContext\Exception;
+use \Tian\Container;
 use \Tian\Http\Request;
 use \Tian\Http\Response;
 use \Tian\Http\RequestContext;
@@ -38,12 +37,35 @@ class RouteCollection implements \IteratorAggregate, \Countable
      */
     protected $runFilters = true;
 
+    /**
+     * @var Container;
+     */
+    protected $container;
 
     public function __clone()
     {
         foreach ($this->routes as $name => $route) {
             $this->routes[$name] = clone $route;
         }
+    }
+
+
+    /**
+     * @param Container $container
+     * @return $this
+     */
+    public function setContainer(Container $container)
+    {
+        $this->container = $container;
+        return $this;
+    }
+
+    /**
+     * @return Container
+     */
+    public function getContainer()
+    {
+        return $this->container;
     }
 
     /**
@@ -248,8 +270,11 @@ class RouteCollection implements \IteratorAggregate, \Countable
      */
     protected function run(Request $request, Route $route)
     {
-        $resolver = new ControllerResolver();
-
+        if (is_null($this->container))
+        {
+            $this->container = new Container();
+        }
+        $resolver = new ControllerResolver($this->container);
         return $resolver->resolver($request, $route);
     }
 

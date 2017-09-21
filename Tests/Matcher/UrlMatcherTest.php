@@ -11,6 +11,7 @@
 
 namespace Tian\Route\Tests\Matcher;
 
+use Tian\Container;
 use Tian\Route\Exception\MethodNotAllowedException;
 use Tian\Route\Exception\ResourceNotFoundException;
 use Tian\Route\Matcher\UrlMatcher;
@@ -92,6 +93,26 @@ class UrlMatcherTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("abc",$response->getContent());
     }
 
+    public function testMatchResultWithParameters()
+    {
+        $router = new RouteCollection();
+        $router->get('/{foo}/{bar}',function (Container $app,$bar, $foo, classParameter $cls){
+            return  $app->make("\\Tian\\Route\\Tests\\Matcher\\classParameter")->getVar().$bar."-abc-".$foo."-".$cls->getVar();
+        });
+        //$collection->add('bar', new Route('/{foo}/{bar}', array('foo' => 'foo', 'bar' => 'bar'), array()));
+        $response = $router->dispatch(Request::create("/a/b"));
+
+        $this->assertEquals("myvarb-abc-a-myvar",$response->getContent());
+    }
+
+    public function testMatchResultWithParametersStringCall()
+    {
+        $router = new RouteCollection();
+        $router->get('/{bar}/{lol}',"\\Tian\\Route\\Tests\\Matcher\\classParameter@action");
+        $response = $router->dispatch(Request::create("/a/bl"));
+
+        $this->assertEquals("a-bl",$response->getContent());
+    }
     public function testMatch()
     {
         // test the patterns are matched and parameters are returned
@@ -426,4 +447,17 @@ class UrlMatcherTest extends \PHPUnit_Framework_TestCase
 //        $matcher = new UrlMatcher($coll, new RequestContext('', 'GET', 'en.example.com'));
 //        $this->assertEquals(array('_route' => 'foo', 'locale' => 'en'), $matcher->match('/'));
 //    }
+}
+
+class classParameter
+{
+    public function getVar()
+    {
+        return "myvar";
+    }
+    public function action($app,$bar,$lol)
+    {
+        return $bar.'-'.$lol;
+
+    }
 }
