@@ -8,13 +8,13 @@
  */
 
 namespace Tian\Route;
-
+use \Closure;
 use \Tian\Http\Request;
 use \Tian\Http\Response;
 use Tian\Route\Exception\InvalidActionException;
 use Tian\Route\Exception\MissingMandatoryParametersException;
 use \Tian\Container;
-
+use \Tian\Pipeline;
 class ControllerResolver
 {
     protected $defNamespace = "\\App\\Controller";
@@ -77,6 +77,25 @@ class ControllerResolver
         }
         return new Response();
     }
+
+    protected function middleware(Route $route, Request $request)
+    {
+        $shouldSkipMiddleware = $this->container->bound('middleware.disable') &&
+            $this->container->make('middleware.disable') === true;
+
+        $middleware = $shouldSkipMiddleware ? [] : $this->gatherRouteMiddleware($route);
+
+        return (new Pipeline())
+            ->send($request)
+            ->through($middleware)
+            ->then(function ($request) use ($route) {
+                return $this->prepareResponse(
+                    $request, $route->run()
+                );
+            });
+
+    }
+
 
     /**
      * @param \ReflectionMethod|\ReflectionFunction $rc
