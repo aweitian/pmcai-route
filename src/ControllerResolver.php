@@ -63,15 +63,12 @@ class ControllerResolver
             }
             $rc = new \ReflectionMethod($class, $method);
             $arg = $this->resolverParameter($rc,$request);
-            array_unshift($arg,$this->container);
 //            var_dump($callback,$arg);exit;
             $content = call_user_func_array($callback[0]."::".$callback[1], $arg);
             return new Response($content);
         } elseif (is_callable($call[0])) {
             $rc = new \ReflectionFunction( $call[0] );
-
             $arg = $this->resolverParameter($rc,$request);
-            array_unshift($arg,$this->container);
             $content = call_user_func_array($call[0], $arg);
             return new Response($content);
         }
@@ -107,19 +104,33 @@ class ControllerResolver
     {
         $arg = [];
         foreach ($rc->getParameters() as $parameter) {
-            if ($parameter->getPosition() == 0)
+//            if ($parameter->getPosition() == 0)
+//            {
+//                //for first app
+//                continue;
+//            }
+            if (!is_null($parameter->getClass()))
             {
-                //for first app
-                continue;
+                if ($parameter->getClass()->name == Container::class)
+                {
+                    $arg[] = $this->container;
+                }
+                else
+                {
+                    $arg[] = $this->container->make($parameter->getClass()->name);
+//                    var_dump(current(array_reverse($arg)));exit;
+                }
             }
-            if ($request->attributes->has($parameter->getName())) {
+            elseif ($request->attributes->has($parameter->getName()))
+            {
                 $arg[] = $request->attributes->get($parameter->getName());
-            } elseif (!is_null($parameter->getClass())) {
-                $arg[] = $this->container->make($parameter->getClass()->name);
-            } else {
+            }
+            else
+            {
                 throw new MissingMandatoryParametersException();
             }
         }
+//        var_dump($arg);
         return $arg;
     }
 }

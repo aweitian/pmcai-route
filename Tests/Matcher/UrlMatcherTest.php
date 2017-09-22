@@ -113,66 +113,90 @@ class UrlMatcherTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals("a-bl",$response->getContent());
     }
-    public function testMatch()
+
+    public function testMiddlewareResult()
     {
-        // test the patterns are matched and parameters are returned
-        $collection = new RouteCollection();
-        $collection->add('foo', new Route('/foo/{bar}'));
-        $matcher = new UrlMatcher($collection, $this->createContext()->setPathInfo("/no-match"));
-        try {
-            $matcher->match();
-            $this->fail();
-        } catch (ResourceNotFoundException $e) {
-        }
-        $this->assertEquals(array('_route' => 'foo', 'bar' => 'baz'), $matcher->match('/foo/baz'));
-
-        // test that defaults are merged
-        $collection = new RouteCollection();
-        $collection->add('foo', new Route('/foo/{bar}', array('def' => 'test')));
-        $matcher = new UrlMatcher($collection, new RequestContext());
-        $this->assertEquals(array('_route' => 'foo', 'bar' => 'baz', 'def' => 'test'), $matcher->match('/foo/baz'));
-
-        // test that route "method" is ignored if no method is given in the context
-        $collection = new RouteCollection();
-        $collection->add('foo', new Route('/foo', array(), array(), array(), '', array(), array('get', 'head')));
-        $matcher = new UrlMatcher($collection, new RequestContext());
-        $this->assertInternalType('array', $matcher->match('/foo'));
-
-        // route does not match with POST method context
-        $matcher = new UrlMatcher($collection, new RequestContext('', 'post'));
-        try {
-            $matcher->match('/foo');
-            $this->fail();
-        } catch (MethodNotAllowedException $e) {
-        }
-
-        // route does match with GET or HEAD method context
-        $matcher = new UrlMatcher($collection, new RequestContext());
-        $this->assertInternalType('array', $matcher->match('/foo'));
-        $matcher = new UrlMatcher($collection, new RequestContext('', 'head'));
-        $this->assertInternalType('array', $matcher->match('/foo'));
-
-        // route with an optional variable as the first segment
-        $collection = new RouteCollection();
-        $collection->add('bar', new Route('/{bar}/foo', array('bar' => 'bar'), array('bar' => 'foo|bar')));
-        $matcher = new UrlMatcher($collection, new RequestContext());
-        $this->assertEquals(array('_route' => 'bar', 'bar' => 'bar'), $matcher->match('/bar/foo'));
-        $this->assertEquals(array('_route' => 'bar', 'bar' => 'foo'), $matcher->match('/foo/foo'));
-
-        $collection = new RouteCollection();
-        $collection->add('bar', new Route('/{bar}', array('bar' => 'bar'), array('bar' => 'foo|bar')));
-        $matcher = new UrlMatcher($collection, new RequestContext());
-        $this->assertEquals(array('_route' => 'bar', 'bar' => 'foo'), $matcher->match('/foo'));
-        $this->assertEquals(array('_route' => 'bar', 'bar' => 'bar'), $matcher->match('/'));
-
-        // route with only optional variables
-        $collection = new RouteCollection();
-        $collection->add('bar', new Route('/{foo}/{bar}', array('foo' => 'foo', 'bar' => 'bar'), array()));
-        $matcher = new UrlMatcher($collection, new RequestContext());
-        $this->assertEquals(array('_route' => 'bar', 'foo' => 'foo', 'bar' => 'bar'), $matcher->match('/'));
-        $this->assertEquals(array('_route' => 'bar', 'foo' => 'a', 'bar' => 'bar'), $matcher->match('/a'));
-        $this->assertEquals(array('_route' => 'bar', 'foo' => 'a', 'bar' => 'b'), $matcher->match('/a/b'));
+        $router = new RouteCollection();
+        $router->get('/{bar}/{lol}',["\\Tian\\Route\\Tests\\Matcher\\classParameter@action",
+            "middleware" => [
+                function ($request,$next) {
+                    var_dump($request);
+                    return $next();
+                }
+            ]
+            ]);
+        $matcher = new UrlMatcher($router);
+        $matcher->setContext($this->createContext("/foo/bar"));
+        $result = $matcher->match();
+        $this->assertEquals(array(
+            "bar"=>"foo",
+            "lol"=> "bar",
+            "_route"=> "get /{bar}/{lol}"
+        ),$result);
+        //获取传递进去的ACTION
+        $matchedRoute = $router->getRoute($result['_route']);
+        $this->assertEquals(array(0,"middleware"),array_keys($matchedRoute->getOption('_call')));
     }
+//    public function testMatch()
+//    {
+//        // test the patterns are matched and parameters are returned
+//        $collection = new RouteCollection();
+//        $collection->add('foo', new Route('/foo/{bar}'));
+//        $matcher = new UrlMatcher($collection, $this->createContext()->setPathInfo("/no-match"));
+//        try {
+//            $matcher->match();
+//            $this->fail();
+//        } catch (ResourceNotFoundException $e) {
+//        }
+//        $this->assertEquals(array('_route' => 'foo', 'bar' => 'baz'), $matcher->match('/foo/baz'));
+//
+//        // test that defaults are merged
+//        $collection = new RouteCollection();
+//        $collection->add('foo', new Route('/foo/{bar}', array('def' => 'test')));
+//        $matcher = new UrlMatcher($collection, new RequestContext());
+//        $this->assertEquals(array('_route' => 'foo', 'bar' => 'baz', 'def' => 'test'), $matcher->match('/foo/baz'));
+//
+//        // test that route "method" is ignored if no method is given in the context
+//        $collection = new RouteCollection();
+//        $collection->add('foo', new Route('/foo', array(), array(), array(), '', array(), array('get', 'head')));
+//        $matcher = new UrlMatcher($collection, new RequestContext());
+//        $this->assertInternalType('array', $matcher->match('/foo'));
+//
+//        // route does not match with POST method context
+//        $matcher = new UrlMatcher($collection, new RequestContext('', 'post'));
+//        try {
+//            $matcher->match('/foo');
+//            $this->fail();
+//        } catch (MethodNotAllowedException $e) {
+//        }
+//
+//        // route does match with GET or HEAD method context
+//        $matcher = new UrlMatcher($collection, new RequestContext());
+//        $this->assertInternalType('array', $matcher->match('/foo'));
+//        $matcher = new UrlMatcher($collection, new RequestContext('', 'head'));
+//        $this->assertInternalType('array', $matcher->match('/foo'));
+//
+//        // route with an optional variable as the first segment
+//        $collection = new RouteCollection();
+//        $collection->add('bar', new Route('/{bar}/foo', array('bar' => 'bar'), array('bar' => 'foo|bar')));
+//        $matcher = new UrlMatcher($collection, new RequestContext());
+//        $this->assertEquals(array('_route' => 'bar', 'bar' => 'bar'), $matcher->match('/bar/foo'));
+//        $this->assertEquals(array('_route' => 'bar', 'bar' => 'foo'), $matcher->match('/foo/foo'));
+//
+//        $collection = new RouteCollection();
+//        $collection->add('bar', new Route('/{bar}', array('bar' => 'bar'), array('bar' => 'foo|bar')));
+//        $matcher = new UrlMatcher($collection, new RequestContext());
+//        $this->assertEquals(array('_route' => 'bar', 'bar' => 'foo'), $matcher->match('/foo'));
+//        $this->assertEquals(array('_route' => 'bar', 'bar' => 'bar'), $matcher->match('/'));
+//
+//        // route with only optional variables
+//        $collection = new RouteCollection();
+//        $collection->add('bar', new Route('/{foo}/{bar}', array('foo' => 'foo', 'bar' => 'bar'), array()));
+//        $matcher = new UrlMatcher($collection, new RequestContext());
+//        $this->assertEquals(array('_route' => 'bar', 'foo' => 'foo', 'bar' => 'bar'), $matcher->match('/'));
+//        $this->assertEquals(array('_route' => 'bar', 'foo' => 'a', 'bar' => 'bar'), $matcher->match('/a'));
+//        $this->assertEquals(array('_route' => 'bar', 'foo' => 'a', 'bar' => 'b'), $matcher->match('/a/b'));
+//    }
 //
 //    public function testMatchWithPrefixes()
 //    {
@@ -455,7 +479,7 @@ class classParameter
     {
         return "myvar";
     }
-    public function action($app,$bar,$lol)
+    public function action(Container $app,$bar,$lol)
     {
         return $bar.'-'.$lol;
 

@@ -69,6 +69,15 @@ class RouteCollection implements \IteratorAggregate, \Countable
     }
 
     /**
+     * @param $name
+     * @return Route
+     */
+    public function getRoute($name)
+    {
+        return isset($this->routes[$name]) ? $this->routes[$name] : null;
+    }
+
+    /**
      * Gets the current RouteCollection as an Iterator that includes all routes.
      *
      * It implements \IteratorAggregate.
@@ -101,6 +110,8 @@ class RouteCollection implements \IteratorAggregate, \Countable
     {
         return $this->routes;
     }
+
+
 
     /**
      * Adds a route.
@@ -303,7 +314,7 @@ class RouteCollection implements \IteratorAggregate, \Countable
         } catch (ResourceNotFoundException $e) {
             $this->handleRoutingException($e);
         }
-//var_dump($parameters['_route'],array_keys($this->routes));
+        //var_dump($parameters['_route'],array_keys($this->routes));
         $route = $this->routes[$parameters['_route']];
 
         // If we found a route, we will grab the actual route objects out of this
