@@ -78,6 +78,15 @@ class RouteCollection implements \IteratorAggregate, \Countable
     }
 
     /**
+     * @return Request
+     */
+    public function getRequest()
+    {
+        return $this->currentRequest;
+    }
+
+
+    /**
      * Gets the current RouteCollection as an Iterator that includes all routes.
      *
      * It implements \IteratorAggregate.
@@ -110,7 +119,6 @@ class RouteCollection implements \IteratorAggregate, \Countable
     {
         return $this->routes;
     }
-
 
 
     /**
@@ -281,12 +289,11 @@ class RouteCollection implements \IteratorAggregate, \Countable
      */
     protected function run(Request $request, Route $route)
     {
-        if (is_null($this->container))
-        {
+        if (is_null($this->container)) {
             $this->container = new Container();
         }
         $resolver = new ControllerResolver($this->container);
-        return $resolver->resolver($request, $route);
+        return $resolver->resolver($route, $request);
     }
 
     /**
@@ -304,6 +311,10 @@ class RouteCollection implements \IteratorAggregate, \Countable
             $path = $request->getPathInfo();
 
             $parameters = $this->getUrlMatcher($request)->match($path);
+            $route = $this->routes[$parameters['_route']];
+            $request->attributes->add($parameters);
+
+            return $route;
         }
 
             // The Symfony routing component's exceptions implement this interface we
@@ -314,15 +325,7 @@ class RouteCollection implements \IteratorAggregate, \Countable
         } catch (ResourceNotFoundException $e) {
             $this->handleRoutingException($e);
         }
-        //var_dump($parameters['_route'],array_keys($this->routes));
-        $route = $this->routes[$parameters['_route']];
-
-        // If we found a route, we will grab the actual route objects out of this
-        // route collection and set the matching parameters on the instance so
-        // we will easily access them later if the route action is executed.
-        $request->attributes->add($parameters);
-
-        return $route;
+        return null;
     }
 
     /**

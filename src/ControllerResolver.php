@@ -38,12 +38,44 @@ class ControllerResolver
      * @param Route $route
      * @return Response
      */
-    public function resolver(Request $request, Route $route)
+    public function resolver(Route $route, Request $request)
     {
-//        var_dump($request->attributes->all());exit;
+        return $this->middleware($route,$request);
+    }
+
+    /**
+     * @param Route $route
+     * @param Request $request
+     * @return Response
+     */
+    protected function middleware(Route $route, Request $request)
+    {
+        $shouldSkipMiddleware = $this->container->bound('middleware.disable') &&
+            $this->container->make('middleware.disable') === true;
+
+        $middleware = $shouldSkipMiddleware ? [] : $this->gatherRouteMiddleware($route);
+
+        return (new Pipeline())
+            ->send($request)
+            ->through($middleware)
+            ->then(function ($request) use ($route) {
+                $res = $this->execAction(
+                    $route,$request
+                );
+                return $res;
+            });
+    }
+
+    /**
+     * @param Route $route
+     * @param Request $request
+     * @return Response
+     */
+    protected function execAction(Route $route, Request $request)
+    {
         $call = $route->getOption("_call");
-        if (array_key_exists("uses", $call)) {
-            $callback = explode("@", $call['uses']);
+        if (array_key_exists("uses", $call) || is_string($call[0])) {
+            $callback = explode("@", isset($call['uses']) ? $call['uses'] : $call[0]);
             if ($callback[0][0] != "\\") {
                 if ($ns = $route->getOption("_namespace")) {
                     $namespace = rtrim($ns, "\\") . "\\" . $callback[0];
@@ -75,24 +107,26 @@ class ControllerResolver
         return new Response();
     }
 
-    protected function middleware(Route $route, Request $request)
+    /**
+     * @param Route $route
+     * @return array
+     */
+    private function gatherRouteMiddleware(Route $route)
     {
-        $shouldSkipMiddleware = $this->container->bound('middleware.disable') &&
-            $this->container->make('middleware.disable') === true;
-
-        $middleware = $shouldSkipMiddleware ? [] : $this->gatherRouteMiddleware($route);
-
-        return (new Pipeline())
-            ->send($request)
-            ->through($middleware)
-            ->then(function ($request) use ($route) {
-                return $this->prepareResponse(
-                    $request, $route->run()
-                );
-            });
-
+        $action = $route->getOption("_call");
+        if (array_key_exists("middleware",$action))
+        {
+            if (is_callable($action['middleware']))
+            {
+                return [$action['middleware']];
+            }
+            elseif (is_array($action['middleware']))
+            {
+                return $action['middleware'];
+            }
+        }
+        return [];
     }
-
 
     /**
      * @param \ReflectionMethod|\ReflectionFunction $rc

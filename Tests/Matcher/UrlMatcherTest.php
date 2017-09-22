@@ -137,6 +137,24 @@ class UrlMatcherTest extends \PHPUnit_Framework_TestCase
         $matchedRoute = $router->getRoute($result['_route']);
         $this->assertEquals(array(0,"middleware"),array_keys($matchedRoute->getOption('_call')));
     }
+
+    public function testMiddleware()
+    {
+        $router = new RouteCollection();
+        $router->get('/{bar}/{lol}',["\\Tian\\Route\\Tests\\Matcher\\classParameter@middleware",
+            "middleware" => [
+                function (Request $request,$next) {
+                    $request->attributes->add([
+                        'aa' => 'bb'
+                    ]);
+                    return $next($request);
+                }
+            ]
+        ]);
+        $response = $router->dispatch(Request::create("/abar/blol"));
+        $this->assertEquals("abar-blol",$response->getContent());
+        $this->assertEquals("bb",$router->getRequest()->attributes->get('aa'));
+    }
 //    public function testMatch()
 //    {
 //        // test the patterns are matched and parameters are returned
@@ -480,6 +498,11 @@ class classParameter
         return "myvar";
     }
     public function action(Container $app,$bar,$lol)
+    {
+        return $bar.'-'.$lol;
+
+    }
+    public function middleware($bar,$lol)
     {
         return $bar.'-'.$lol;
 
