@@ -42,6 +42,8 @@ class RouteCollection implements \IteratorAggregate, \Countable
      */
     protected $container;
 
+
+    protected $grpAction = [];
     public function __clone()
     {
         foreach ($this->routes as $name => $route) {
@@ -85,6 +87,13 @@ class RouteCollection implements \IteratorAggregate, \Countable
         return $this->currentRequest;
     }
 
+
+    public function group(array $actions,\Closure $call)
+    {
+        $this->grpAction = $actions;
+        $call($this);
+        $this->grpAction = [];
+    }
 
     /**
      * Gets the current RouteCollection as an Iterator that includes all routes.
@@ -459,7 +468,7 @@ class RouteCollection implements \IteratorAggregate, \Countable
         // routes we'll also set those requirements as well such as defaults.
         $route = new Route($pattern);
         $route->setOptions(array(
-            '_call' => $action,
+            '_call' => array_merge($this->grpAction,$action),
         ));
         //->addRequirements($pattern);
 

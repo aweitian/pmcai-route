@@ -155,6 +155,30 @@ class UrlMatcherTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals("abar-blol",$response->getContent());
         $this->assertEquals("bb",$router->getRequest()->attributes->get('aa'));
     }
+    public function testGroup()
+    {
+        $router = new RouteCollection();
+        $router->group(['a' => 'b'],function (RouteCollection $router){
+            $router->get('/{bar}/{lol}',["\\Tian\\Route\\Tests\\Matcher\\classParameter@middleware",
+                "middleware" => [
+                    function (Request $request,$next) {
+                        $request->attributes->add([
+                            'aa' => 'bb'
+                        ]);
+                        return $next($request);
+                    }
+                ]
+            ]);
+            $response = $router->dispatch(Request::create("/abar/blol"));
+            $this->assertEquals("abar-blol",$response->getContent());
+            $this->assertEquals("bb",$router->getRequest()->attributes->get('aa'));
+            $call = $router->getContainer()->make('route.matched.action');
+            $this->assertEquals('b',($call['a']));
+        });
+
+    }
+
+
 //    public function testMatch()
 //    {
 //        // test the patterns are matched and parameters are returned

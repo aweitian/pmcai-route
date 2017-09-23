@@ -8,7 +8,6 @@
  */
 
 namespace Tian\Route;
-use \Closure;
 use \Tian\Http\Request;
 use \Tian\Http\Response;
 use Tian\Route\Exception\InvalidActionException;
@@ -19,6 +18,7 @@ class ControllerResolver
 {
     protected $defNamespace = "\\App\\Controller";
 
+
     /**
      * @var Container;
      */
@@ -28,6 +28,7 @@ class ControllerResolver
     public function __construct(Container $container)
     {
         $this->container = $container;
+        $this->grpAction = [];
     }
 
     /**
@@ -66,6 +67,16 @@ class ControllerResolver
             });
     }
 
+    protected function handleNamespace($call)
+    {
+        $namespace = isset($call["namespace"]) ? $call["namespace"] : $this->defNamespace;
+        if ($namespace[0] != "\\")
+        {
+            $namespace = $this->defNamespace . "\\" . $namespace;
+        }
+        return $namespace;
+    }
+
     /**
      * @param Route $route
      * @param Request $request
@@ -74,18 +85,14 @@ class ControllerResolver
     protected function execAction(Route $route, Request $request)
     {
         $call = $route->getOption("_call");
+        $this->container->instance('route.matched.action',$call);
         if (array_key_exists("uses", $call) || is_string($call[0])) {
             $callback = explode("@", isset($call['uses']) ? $call['uses'] : $call[0]);
             if ($callback[0][0] != "\\") {
-                if ($ns = $route->getOption("_namespace")) {
-                    $namespace = rtrim($ns, "\\") . "\\" . $callback[0];
-                } else {
-                    $namespace = $this->defNamespace . "\\" . $callback[0];
-                }
+                $namespace = $this->handleNamespace($call);
             } else {
                 $namespace = $callback[0];
             }
-            //$callback = $namespace."::".$callback[1];
             $class = $namespace;
             $method = $callback[1];
             if (!class_exists($class)) {
@@ -106,6 +113,12 @@ class ControllerResolver
         }
         return new Response();
     }
+
+    public function group(array $actions,\Closure $call)
+    {
+
+    }
+
 
     /**
      * @param Route $route
