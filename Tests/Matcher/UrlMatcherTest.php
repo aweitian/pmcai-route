@@ -22,161 +22,218 @@ use Tian\Http\Request;
 
 class UrlMatcherTest extends \PHPUnit_Framework_TestCase
 {
-    private function createContext($pathinfo="")
-    {
-        $r = new RequestContext();
-        if ($pathinfo)
-            $r->setPathInfo($pathinfo);
-        return $r;
-    }
-    public function testNoMethodSoAllowed()
-    {
-        $router = new RouteCollection();
-        $router->get('foo', ["uses" => "\\Tian\\Main@Index","as" => "get-foo"]);
+//    public function testNoMethodSoAllowed()
+//    {
+//        $router = new RouteCollection();
+//        $router->get('foo', ["uses" => "\\Tian\\Main@Index","as" => "get-foo"]);
+//
+//        $matcher = new UrlMatcher($router,Request::create("/foo"));
+//        $data =  $matcher->match();
+//        $this->assertEquals(array('_route' => 'get-foo'), $data);
+//    }
+//
+//    public function testMethodNotAllowed()
+//    {
+//        $coll = new RouteCollection();
+//        $coll->get('foo', ["uses" => "\\Tian\\Main@Index","as" => "get-foo"]);
+//
+//        $matcher = new UrlMatcher($coll);
+//
+//        try {
+//            $matcher->match(Request::create("/foo")->setMethod('post'));
+//            $this->fail();
+//        } catch (MethodNotAllowedException $e) {
+//            $this->assertEquals(array('GET'), $e->getAllowedMethods());
+//        }
+//    }
+//
+//    public function testHeadAllowedWhenRequirementContainsGet()
+//    {
+//        $coll = new RouteCollection();
+//        $coll->add('foo', new Route('/foo', array(), array(), array(), '', array(), array('get')));
+//
+//        $matcher = new UrlMatcher($coll);
+//        $matcher->setRequest(Request::create("/foo"));
+//        $this->assertInternalType('array', $matcher->match());
+//    }
+//
+//    public function testMethodNotAllowedAggregatesAllowedMethods()
+//    {
+//        $coll = new RouteCollection();
+//        $coll->add('foo1', new Route('/foo', array(), array(), array(), '', array(), array('post')));
+//        $coll->add('foo2', new Route('/foo', array(), array(), array(), '', array(), array('put', 'delete')));
+//
+//        $matcher = new UrlMatcher($coll);
+//        $matcher->setRequest(Request::create("/foo"));
+//        try {
+//            $matcher->match();
+//            $this->fail();
+//        } catch (MethodNotAllowedException $e) {
+//            $this->assertEquals(array('POST', 'PUT', 'DELETE'), $e->getAllowedMethods());
+//        }
+//    }
+//
+//    public function testMatchResult()
+//    {
+//        $router = new RouteCollection();
+//        $router->get('/{foo}/{bar}',function (){
+//            return "abc";
+//        });
+//        //$collection->add('bar', new Route('/{foo}/{bar}', array('foo' => 'foo', 'bar' => 'bar'), array()));
+//        $response = $router->dispatch(Request::create("/a/b"));
+//
+//        $this->assertEquals("abc",$response->getContent());
+//    }
+//
+//    public function testMatchResultWithParameters()
+//    {
+//        $router = new RouteCollection();
+//        $router->get('/{foo}/{bar}',function (Container $app,$bar, $foo, classParameter $cls){
+//            return  $app->make("\\Tian\\Route\\Tests\\Matcher\\classParameter")->getVar().$bar."-abc-".$foo."-".$cls->getVar();
+//        });
+//        //$collection->add('bar', new Route('/{foo}/{bar}', array('foo' => 'foo', 'bar' => 'bar'), array()));
+//        $response = $router->dispatch(Request::create("/a/b"));
+//
+//        $this->assertEquals("myvarb-abc-a-myvar",$response->getContent());
+//    }
+//
+//    public function testMatchResultWithParametersStringCall()
+//    {
+//        $router = new RouteCollection();
+//        $router->get('/{bar}/{lol}',"\\Tian\\Route\\Tests\\Matcher\\classParameter@action");
+//        $response = $router->dispatch(Request::create("/a/bl"));
+//
+//        $this->assertEquals("a-bl",$response->getContent());
+//    }
+//
+//    public function testRegexp()
+//    {
+//        $router = new RouteCollection();
+//        $router->get('/{bar}/{lol}',[
+//            "\\Tian\\Route\\Tests\\Matcher\\classParameter@action" ,
+//            "where" => [
+//                   "bar" => "a\d+"
+//            ]
+//        ]);
+//        $response = $router->dispatch(Request::create("/a12/bl"));
+//
+//        $this->assertEquals("a12-bl",$response->getContent());
+//    }
+//
+//
+//    public function testWhere()
+//    {
+//        $router = new RouteCollection();
+//        $router->get('/{bar}/{lol}',[
+//            "\\Tian\\Route\\Tests\\Matcher\\classParameter@action" ,
+//        ])->where([
+//            "bar" => "ab\d+b"
+//        ]);
+//        $response = $router->dispatch(Request::create("/ab12b/bl"));
+//
+//        $this->assertEquals("ab12b-bl",$response->getContent());
+//    }
 
-        $matcher = new UrlMatcher($router,$this->createContext()->setPathInfo("/foo"));
-        $data =  $matcher->match();
-
-        $this->assertEquals(array('_route' => 'get-foo'), $data);
-    }
-
-    public function testMethodNotAllowed()
-    {
-        $coll = new RouteCollection();
-        $coll->get('foo', ["uses" => "\\Tian\\Main@Index","as" => "get-foo"]);
-
-        $matcher = new UrlMatcher($coll);
-
-        try {
-            $matcher->match($this->createContext()->setPathInfo("/foo")->setMethod('post'));
-            $this->fail();
-        } catch (MethodNotAllowedException $e) {
-            $this->assertEquals(array('GET'), $e->getAllowedMethods());
-        }
-    }
-
-    public function testHeadAllowedWhenRequirementContainsGet()
-    {
-        $coll = new RouteCollection();
-        $coll->add('foo', new Route('/foo', array(), array(), array(), '', array(), array('get')));
-
-        $matcher = new UrlMatcher($coll);
-        $matcher->setContext($this->createContext()->setPathInfo("/foo"));
-        $this->assertInternalType('array', $matcher->match());
-    }
-
-    public function testMethodNotAllowedAggregatesAllowedMethods()
-    {
-        $coll = new RouteCollection();
-        $coll->add('foo1', new Route('/foo', array(), array(), array(), '', array(), array('post')));
-        $coll->add('foo2', new Route('/foo', array(), array(), array(), '', array(), array('put', 'delete')));
-
-        $matcher = new UrlMatcher($coll);
-        $matcher->setContext($this->createContext()->setPathInfo("/foo"));
-        try {
-            $matcher->match();
-            $this->fail();
-        } catch (MethodNotAllowedException $e) {
-            $this->assertEquals(array('POST', 'PUT', 'DELETE'), $e->getAllowedMethods());
-        }
-    }
-
-    public function testMatchResult()
-    {
-        $router = new RouteCollection();
-        $router->get('/{foo}/{bar}',function (){
-            return "abc";
-        });
-        //$collection->add('bar', new Route('/{foo}/{bar}', array('foo' => 'foo', 'bar' => 'bar'), array()));
-        $response = $router->dispatch(Request::create("/a/b"));
-
-        $this->assertEquals("abc",$response->getContent());
-    }
-
-    public function testMatchResultWithParameters()
-    {
-        $router = new RouteCollection();
-        $router->get('/{foo}/{bar}',function (Container $app,$bar, $foo, classParameter $cls){
-            return  $app->make("\\Tian\\Route\\Tests\\Matcher\\classParameter")->getVar().$bar."-abc-".$foo."-".$cls->getVar();
-        });
-        //$collection->add('bar', new Route('/{foo}/{bar}', array('foo' => 'foo', 'bar' => 'bar'), array()));
-        $response = $router->dispatch(Request::create("/a/b"));
-
-        $this->assertEquals("myvarb-abc-a-myvar",$response->getContent());
-    }
-
-    public function testMatchResultWithParametersStringCall()
-    {
-        $router = new RouteCollection();
-        $router->get('/{bar}/{lol}',"\\Tian\\Route\\Tests\\Matcher\\classParameter@action");
-        $response = $router->dispatch(Request::create("/a/bl"));
-
-        $this->assertEquals("a-bl",$response->getContent());
-    }
-
-    public function testMiddlewareResult()
+    public function testName()
     {
         $router = new RouteCollection();
         $router->get('/{bar}/{lol}',["\\Tian\\Route\\Tests\\Matcher\\classParameter@action",
             "middleware" => [
                 function ($request,$next) {
-                    var_dump($request);
                     return $next();
                 }
             ]
-            ]);
+        ])->setName("lolroute")->where([
+            "bar" => "bar|bx"
+        ]);
         $matcher = new UrlMatcher($router);
-        $matcher->setContext($this->createContext("/foo/bar"));
+        $matcher->setRequest(Request::create("/bx/bar"));
         $result = $matcher->match();
         $this->assertEquals(array(
-            "bar"=>"foo",
+            "bar"=>"bx",
             "lol"=> "bar",
-            "_route"=> "get /{bar}/{lol}"
+            "_route"=> "lolroute"
         ),$result);
-        //获取传递进去的ACTION
-        $matchedRoute = $router->getRoute($result['_route']);
-        $this->assertEquals(array(0,"middleware"),array_keys($matchedRoute->getOption('_call')));
     }
 
-    public function testMiddleware()
-    {
-        $router = new RouteCollection();
-        $router->get('/{bar}/{lol}',["\\Tian\\Route\\Tests\\Matcher\\classParameter@middleware",
-            "middleware" => [
-                function (Request $request,$next) {
-                    $request->attributes->add([
-                        'aa' => 'bb'
-                    ]);
-                    return $next($request);
-                }
-            ]
-        ]);
-        $response = $router->dispatch(Request::create("/abar/blol"));
-        $this->assertEquals("abar-blol",$response->getContent());
-        $this->assertEquals("bb",$router->getRequest()->attributes->get('aa'));
-    }
-    public function testGroup()
-    {
-        $router = new RouteCollection();
-        $router->group(['a' => 'b'],function (RouteCollection $router){
-            $router->get('/{bar}/{lol}',["\\Tian\\Route\\Tests\\Matcher\\classParameter@middleware",
-                "middleware" => [
-                    function (Request $request,$next) {
-                        $request->attributes->add([
-                            'aa' => 'bb'
-                        ]);
-                        return $next($request);
-                    }
-                ]
-            ]);
-            $response = $router->dispatch(Request::create("/abar/blol"));
-            $this->assertEquals("abar-blol",$response->getContent());
-            $this->assertEquals("bb",$router->getRequest()->attributes->get('aa'));
-            $call = $router->getContainer()->make('route.matched.action');
-            $this->assertEquals('b',($call['a']));
-        });
+//    public function testMiddlewareResult()
+//    {
+//        $router = new RouteCollection();
+//        $router->get('/{bar}/{lol}',["\\Tian\\Route\\Tests\\Matcher\\classParameter@action",
+//            "middleware" => [
+//                function ($request,$next) {
+//                    var_dump($request);
+//                    return $next();
+//                }
+//            ]
+//            ]);
+//        $matcher = new UrlMatcher($router);
+//        $matcher->setContext($this->createContext("/foo/bar"));
+//        $result = $matcher->match();
+//        $this->assertEquals(array(
+//            "bar"=>"foo",
+//            "lol"=> "bar",
+//            "_route"=> "get /{bar}/{lol}"
+//        ),$result);
+//        //获取传递进去的ACTION
+//        $matchedRoute = $router->getRoute($result['_route']);
+//        $this->assertEquals(array(0,"middleware"),array_keys($matchedRoute->getOption('_call')));
+//    }
+//
+//    public function testMiddleware()
+//    {
+//        $router = new RouteCollection();
+//        $router->get('/{bar}/{lol}',["\\Tian\\Route\\Tests\\Matcher\\classParameter@middleware",
+//            "middleware" => [
+//                function (Request $request,$next) {
+//                    $request->attributes->add([
+//                        'aa' => 'bb'
+//                    ]);
+//                    return $next($request);
+//                }
+//            ]
+//        ]);
+//        $response = $router->dispatch(Request::create("/abar/blol"));
+//        $this->assertEquals("abar-blol",$response->getContent());
+//        $this->assertEquals("bb",$router->getRequest()->attributes->get('aa'));
+//    }
+//    public function testGroup()
+//    {
+//        $router = new RouteCollection();
+//        $router->group(['a' => 'b'],function (RouteCollection $router){
+//            $router->get('/{bar}/{lol}',["\\Tian\\Route\\Tests\\Matcher\\classParameter@middleware",
+//                "middleware" => [
+//                    function (Request $request,$next) {
+//                        $request->attributes->add([
+//                            'aa' => 'bb'
+//                        ]);
+//                        return $next($request);
+//                    }
+//                ]
+//            ]);
+//            $response = $router->dispatch(Request::create("/abar/blol"));
+//            $this->assertEquals("abar-blol",$response->getContent());
+//            $this->assertEquals("bb",$router->getRequest()->attributes->get('aa'));
+//            $call = $router->getContainer()->make('route.matched.action');
+//            $this->assertEquals('b',($call['a']));
+//        });
+//
+//    }
 
-    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 //    public function testMatch()
@@ -521,7 +578,7 @@ class classParameter
     {
         return "myvar";
     }
-    public function action(Container $app,$bar,$lol)
+    public function action($bar,$lol)
     {
         return $bar.'-'.$lol;
 

@@ -9,6 +9,7 @@
 
 namespace Tian\Route;
 use \Tian\Http\Request;
+//use Tian\Http\Request;
 use \Tian\Http\Response;
 use Tian\Route\Exception\InvalidActionException;
 use Tian\Route\Exception\MissingMandatoryParametersException;
@@ -28,7 +29,6 @@ class ControllerResolver
     public function __construct(Container $container)
     {
         $this->container = $container;
-        $this->grpAction = [];
     }
 
     /**
@@ -84,12 +84,13 @@ class ControllerResolver
      */
     protected function execAction(Route $route, Request $request)
     {
-        $call = $route->getOption("_call");
-        $this->container->instance('route.matched.action',$call);
-        if (array_key_exists("uses", $call) || is_string($call[0])) {
-            $callback = explode("@", isset($call['uses']) ? $call['uses'] : $call[0]);
+        $action = $route->getOptions();
+//        var_dump(array_keys($action));exit;
+        $this->container->instance('route.matched.action',$action);
+        if (array_key_exists("uses", $action) || (isset($action[0]) && is_string($action[0]))) {
+            $callback = explode("@", isset($action['uses']) ? $action['uses'] : $action[0]);
             if ($callback[0][0] != "\\") {
-                $namespace = $this->handleNamespace($call);
+                $namespace = $this->handleNamespace($action);
             } else {
                 $namespace = $callback[0];
             }
@@ -103,20 +104,26 @@ class ControllerResolver
             $rc = new \ReflectionMethod($class, $method);
             $arg = $this->resolverParameter($rc,$request);
 //            var_dump($callback,$arg);exit;
-            $content = call_user_func_array($callback[0]."::".$callback[1], $arg);
+            $rc = new \ReflectionClass($callback[0]);
+            if ($rc->isSubclassOf("\\Tian\\Route\\Controller"))
+            {
+                $inst = $rc->newInstance($this->container);
+            }
+            else
+            {
+                $inst = $rc->newInstance();
+            }
+
+            $m = $rc->getMethod($callback[1]);
+            $content = $m->invokeArgs($inst,$arg);
             return new Response($content);
-        } elseif (is_callable($call[0])) {
-            $rc = new \ReflectionFunction( $call[0] );
+        } elseif (is_callable($action[0])) {
+            $rc = new \ReflectionFunction( $action[0] );
             $arg = $this->resolverParameter($rc,$request);
-            $content = call_user_func_array($call[0], $arg);
+            $content = call_user_func_array($action[0], $arg);
             return new Response($content);
         }
         return new Response();
-    }
-
-    public function group(array $actions,\Closure $call)
-    {
-
     }
 
 
@@ -126,7 +133,8 @@ class ControllerResolver
      */
     private function gatherRouteMiddleware(Route $route)
     {
-        $action = $route->getOption("_call");
+        $action = $route->getOptions();
+
         if (array_key_exists("middleware",$action))
         {
             if (is_callable($action['middleware']))

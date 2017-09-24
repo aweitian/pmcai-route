@@ -13,7 +13,7 @@ use Closure;
 use \Tian\Container;
 use \Tian\Http\Request;
 use \Tian\Http\Response;
-use \Tian\Http\RequestContext;
+//use \Tian\Http\RequestContext;
 use \Tian\Route\Matcher\UrlMatcher;
 use \Tian\Route\Exception\MethodNotAllowedException;
 use \Tian\Route\Exception\ResourceNotFoundException;
@@ -277,7 +277,6 @@ class RouteCollection implements \IteratorAggregate, \Countable
      */
     public function dispatch(Request $request)
     {
-        $this->currentRequest = $request;
 
         // First we will call the "before" global middlware, which we'll give a chance
         // to override the normal requests process when a response is returned by a
@@ -357,11 +356,7 @@ class RouteCollection implements \IteratorAggregate, \Countable
      */
     protected function getUrlMatcher(Request $request)
     {
-        $context = new RequestContext;
-
-        $context->fromRequest($request);
-
-        return new UrlMatcher($this, $context);
+        return new UrlMatcher($this, $request);
     }
 //
 //    /**
@@ -467,9 +462,13 @@ class RouteCollection implements \IteratorAggregate, \Countable
         // so we can easily access it later. If there are other parameters on a
         // routes we'll also set those requirements as well such as defaults.
         $route = new Route($pattern);
-        $route->setOptions(array(
-            '_call' => array_merge($this->grpAction,$action),
-        ));
+
+        $route->setRouter($this);
+        $route->setOptions(array_merge($this->grpAction,$action));
+        if (isset($action['where'])) {
+            $where = $action['where'];
+            $route->addRequirements($where);
+        }
         //->addRequirements($pattern);
 
         $route->setRequirement('_method', $method);
@@ -480,7 +479,7 @@ class RouteCollection implements \IteratorAggregate, \Countable
         $this->setAttributes($route, $action, $optional);
 
         $name = $this->getName($method, $pattern, $action);
-
+        $route->setCurrentName($name);
         $this->routes[$name] = $route;
 
         return $route;
@@ -545,6 +544,21 @@ class RouteCollection implements \IteratorAggregate, \Countable
     }
 
     /**
+     * @param $old
+     * @param $new
+     * @return bool
+     */
+    public function rename($old,$new)
+    {
+        if (!isset($this->routes[$old]))
+            return false;
+        $route = $this->routes[$old];
+        unset($this->routes[$old]);
+        $this->routes[$new] = $route;
+        return true;
+    }
+
+    /**
      * Get the name of the route.
      *
      * @param  string $method
@@ -585,9 +599,9 @@ class RouteCollection implements \IteratorAggregate, \Countable
         // If there is a "uses" key on the route it means it is using a controller
         // instead of a Closures route. So, we'll need to set that as an option
         // on the route so we can easily do reverse routing ot the route URI.
-        if (isset($action['uses'])) {
-            $route->setOption('_uses', $action['uses']);
-        }
+//        if (isset($action['uses'])) {
+//            $route->setOption('_uses', $action['uses']);
+//        }
 
         if (isset($action['domain'])) {
             $route->setHost($action['domain']);

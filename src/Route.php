@@ -9,6 +9,7 @@ namespace Tian\Route;
 
 class Route implements \Serializable
 {
+    private $currentName = '';
     /**
      * @var string
      */
@@ -41,6 +42,11 @@ class Route implements \Serializable
      * @var null|CompiledRoute
      */
     private $compiled;
+
+    /**
+     * @var RouteCollection
+     */
+    private $router;
     /**
      * Constructor.
      *
@@ -71,6 +77,16 @@ class Route implements \Serializable
         if ($methods) {
             $this->setMethods($methods);
         }
+    }
+
+    /**
+     * @param RouteCollection $collection
+     * @return $this
+     */
+    public function setRouter(RouteCollection $collection)
+    {
+        $this->router = $collection;
+        return $this;
     }
     /**
      * {@inheritdoc}
@@ -114,6 +130,24 @@ class Route implements \Serializable
     {
         return $this->path;
     }
+
+    /**
+     * @param $name
+     * @return $this
+     */
+    public function setCurrentName($name)
+    {
+        $this->currentName = $name;
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrentName()
+    {
+        return $this->currentName;
+    }
     /**
      * Sets the pattern for the path.
      *
@@ -131,6 +165,7 @@ class Route implements \Serializable
         $this->compiled = null;
         return $this;
     }
+
     /**
      * Returns the pattern for the host.
      *
@@ -140,6 +175,30 @@ class Route implements \Serializable
     {
         return $this->host;
     }
+
+    /**
+     * @param $name
+     * @return $this
+     */
+    public function setName($name)
+    {
+        $this->setOption("as",$name);
+        if (!is_null($this->router) && $this->currentName != $name)
+        {
+            $this->router->rename($this->currentName,$name);
+        }
+        return $this;
+    }
+
+    /**
+     * @param array $requirements
+     * @return Route
+     */
+    public function where(array $requirements)
+    {
+        return $this->addRequirements($requirements);
+    }
+
     /**
      * Sets the pattern for the host.
      *

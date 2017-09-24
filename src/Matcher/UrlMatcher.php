@@ -13,7 +13,7 @@ namespace Tian\Route\Matcher;
 use Tian\Route\Exception\MethodNotAllowedException;
 use Tian\Route\Exception\ResourceNotFoundException;
 use Tian\Route\RouteCollection;
-use Tian\Http\RequestContext;
+use Tian\Http\Request;
 use Tian\Route\Route;
 
 /**
@@ -27,9 +27,9 @@ class UrlMatcher
     const REQUIREMENT_MISMATCH = 1;
     const ROUTE_MATCH = 2;
     /**
-     * @var RequestContext
+     * @var Request
      */
-    protected $context;
+    protected $request;
     /**
      * @var array
      */
@@ -43,42 +43,56 @@ class UrlMatcher
      * Constructor.
      *
      * @param RouteCollection $routes A RouteCollection instance
-     * @param RequestContext $context
+     * @param Request $request
      */
-    public function __construct(RouteCollection $routes, RequestContext $context = null)
+    public function __construct(RouteCollection $routes, Request $request = null)
     {
         $this->routes = $routes;
-        if (!is_null($context)) {
-            $this->setContext($context);
+        if (!is_null($request)) {
+            $this->setRequest($request);
         }
     }
 
     /**
-     * {@inheritdoc}
+     * @param Request $request
+     * @return $this
      */
-    public function setContext(RequestContext $context)
+    public function setRequest(Request $request)
     {
-        $this->context = $context;
+        $this->request = $request;
+        return $this;
     }
 
     /**
-     * {@inheritdoc}
+     * @return Request
      */
-    public function getContext()
+    public function getRequest()
     {
-        return $this->context;
+        return $this->request;
     }
 
-    public function match($context = null)
+    public function match($request = null)
     {
-        if (!is_null($context)) {
-            if ($context instanceof RequestContext)
-                $this->setContext($context);
-            elseif (is_string($context))
-                $this->context->setPathInfo($context);
+        $pathinfo = "";
+        if (!is_null($request))
+        {
+            if ($request instanceof Request)
+            {
+                $this->request = $request;
+                $pathinfo = $request->getPathInfo();
+            }
+            else
+            {
+                $pathinfo = $request;
+            }
+        }else{
+            if (!is_null($this->request))
+            {
+                $pathinfo = $this->request->getPathInfo();
+            }
         }
         $this->allow = array();
-        if ($ret = $this->matchCollection(rawurldecode($this->context->getPathInfo()), $this->routes)) {
+        if ($ret = $this->matchCollection(rawurldecode($pathinfo), $this->routes)) {
             return $ret;
         }
         throw 0 < count($this->allow)
@@ -112,13 +126,13 @@ class UrlMatcher
                 continue;
             }
             $hostMatches = array();
-            if ($compiledRoute->getHostRegex() && !preg_match($compiledRoute->getHostRegex(), $this->context->getHost(), $hostMatches)) {
+            if ($compiledRoute->getHostRegex() && !preg_match($compiledRoute->getHostRegex(), $this->request->getHost(), $hostMatches)) {
                 continue;
             }
             // check HTTP method requirement
             if ($req = $route->getRequirement('_method')) {
                 // HEAD and GET are equivalent as per RFC
-                if ('HEAD' === $method = $this->context->getMethod()) {
+                if ('HEAD' === $method = $this->request->getMethod()) {
                     $method = 'GET';
                 }
                 if (!in_array($method, $req = explode('|', strtoupper($req)))) {
@@ -126,13 +140,14 @@ class UrlMatcher
                     continue;
                 }
             }
-            $status = $this->handleRouteRequirements($pathinfo, $name, $route);
+            $status = $this->handleRouteRequirements($route);
 
             if (self::REQUIREMENT_MISMATCH === $status[0]) {
                 continue;
             }
             return $this->getAttributes($route, $name, array_replace($matches, $hostMatches, isset($status[1]) ? $status[1] : array()));
         }
+        return [];
     }
 
     /**
@@ -157,17 +172,15 @@ class UrlMatcher
     /**
      * Handles specific route requirements.
      *
-     * @param string $pathinfo The path
-     * @param string $name The route name
      * @param Route $route The route
      *
      * @return array The first element represents the status, the second contains additional information
      */
-    protected function handleRouteRequirements($pathinfo, $name, Route $route)
+    protected function handleRouteRequirements(Route $route)
     {
         // check HTTP scheme requirement
         $scheme = $route->getRequirement('_scheme');
-        $status = $scheme && $scheme !== $this->context->getScheme() ? self::REQUIREMENT_MISMATCH : self::REQUIREMENT_MATCH;
+        $status = $scheme && $scheme !== $this->request->getScheme() ? self::REQUIREMENT_MISMATCH : self::REQUIREMENT_MATCH;
         return array($status, null);
     }
 
