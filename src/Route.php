@@ -185,7 +185,10 @@ class Route implements \Serializable
         $this->setOption("as",$name);
         if (!is_null($this->router) && $this->currentName != $name)
         {
-            $this->router->rename($this->currentName,$name);
+            if ($this->router->rename($this->currentName,$name))
+            {
+                $this->setCurrentName($name);
+            }
         }
         return $this;
     }
