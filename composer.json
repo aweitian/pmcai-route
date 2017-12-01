@@ -23,7 +23,7 @@
   "minimum-stability": "stable",
   "require": {
     "php": ">=5.4.0",
-    "aweitian/log":"dev-master",
+    "aweitian/log":">=1.0",
     "aweitian/http":"dev-master",
     "aweitian/container":"dev-master",
     "aweitian/pipeline": "dev-master"

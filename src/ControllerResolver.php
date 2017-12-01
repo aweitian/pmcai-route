@@ -1,5 +1,6 @@
 <?php
 /**
+ * 本类职责是解析路由的第二个参数,执行 action
  * Ccontrol Action 存于Route的Option中
  * Created by PhpStorm.
  * User: awei.tian
@@ -24,11 +25,54 @@ class ControllerResolver
      */
     protected $container;
 
+    /**
+     * 用于索引
+     * All of the short-hand keys for middlewares.
+     * [
+     *      wmname1 => m1,
+     *      wmname2 => m2,
+     * ]
+     * @var array
+     */
+    protected $middleware = [];
 
-    public function __construct(Container $container)
+    /**
+     * 用于索引
+     * All of the middleware groups.
+     * [
+     *      web:[
+     *          mw1,
+     *          mw2
+     *      ],
+     *
+     * ]
+     * @var array
+     */
+    protected $middlewareGroups = [];
+
+    /**
+     * The priority-sorted list of middleware.
+     * [
+     *      mw1,
+     *      mw2,
+     *      ...
+     * ]
+     * Forces the listed middleware to always be in the given order.
+     *
+     * @var array
+     */
+    public $middlewarePriority = [];
+    /***
+     * ControllerResolver constructor.
+     * @param Container $container
+     * @param array $middleware  middleware|middlewareGroups|middlewarePriority
+     */
+    public function __construct(Container $container,$middleware)
     {
         $this->container = $container;
-        $this->grpAction = [];
+        $this->middlewareGroups = $middleware['middlewareGroups'];
+        $this->middleware = $middleware['middleware'];
+        $this->middlewarePriority = $middleware['middlewarePriority'];
     }
 
     /**
@@ -39,7 +83,7 @@ class ControllerResolver
      * @param Route $route
      * @return Response
      */
-    public function resolver(Route $route, Request $request)
+    public function resolve(Route $route, Request $request)
     {
         return $this->middleware($route,$request);
     }
@@ -54,11 +98,43 @@ class ControllerResolver
         $shouldSkipMiddleware = $this->container->bound('middleware.disable') &&
             $this->container->make('middleware.disable') === true;
 
-        $middleware = $shouldSkipMiddleware ? [] : $this->gatherRouteMiddleware($route);
+        $middlewares = $shouldSkipMiddleware ? [] : $this->gatherRouteMiddleware($route);
 
+        $action = $route->getOption("_call");
+        if (array_key_exists("passMiddlewarePriority",$action))
+        {
+            $results = [];
+        }
+        else
+        {
+            $results = $this->middlewarePriority;
+        }
+        $this->middlewarePriority = [];
+        foreach ($middlewares as $middleware)
+        {
+            if (is_callable($middleware))
+            {
+                $results[] = $middleware;
+            }
+            else if (is_string($middleware))
+            {
+                if (array_key_exists($middleware,$this->middleware))
+                {
+                    $results[] = $this->middleware[$middleware];
+                }
+                else if (array_key_exists($middleware,$this->middlewareGroups))
+                {
+                    $results = array_merge($results,$this->middlewareGroups[$middleware]);
+                }
+                else if (class_exists($middleware))
+                {
+                    $results[] = $middleware;
+                }
+            }
+        }
         return (new Pipeline())
             ->send($request)
-            ->through($middleware)
+            ->through($results)
             ->then(function ($request) use ($route) {
                 $res = $this->execAction(
                     $route,$request
@@ -85,7 +161,8 @@ class ControllerResolver
     protected function execAction(Route $route, Request $request)
     {
         $call = $route->getOption("_call");
-        $this->container->instance('route.matched.action',$call);
+        $this->container->instance('router.matched.action',$call);
+        $this->container->instance('router.matched.route',$route);
         if (array_key_exists("uses", $call) || is_string($call[0])) {
             $callback = explode("@", isset($call['uses']) ? $call['uses'] : $call[0]);
             if ($callback[0][0] != "\\") {

@@ -31,11 +31,48 @@ class RouteCollection implements \IteratorAggregate, \Countable
     private $currentRequest;
 
     /**
-     * Indicates if filters should be run.
-     *
-     * @var bool
+     * 用于索引
+     * All of the short-hand keys for middlewares.
+     * [
+     *      wmname1 => m1,
+     *      wmname2 => m2,
+     * ]
+     * @var array
      */
-    protected $runFilters = true;
+    protected $middleware = [];
+
+    /**
+     * 用于索引
+     * All of the middleware groups.
+     * [
+     *      web:[
+     *          mw1,
+     *          mw2
+     *      ],
+     *
+     * ]
+     * @var array
+     */
+    protected $middlewareGroups = [];
+
+    /**
+     * The priority-sorted list of middleware.
+     * [
+     *      mw1,
+     *      mw2,
+     *      ...
+     * ]
+     * Forces the listed middleware to always be in the given order.
+     *
+     * @var array
+     */
+    public $middlewarePriority = [];
+//    /**
+//     * Indicates if filters should be run.
+//     *
+//     * @var bool
+//     */
+//    protected $runFilters = true;
 
     /**
      * @var Container;
@@ -62,6 +99,38 @@ class RouteCollection implements \IteratorAggregate, \Countable
         return $this;
     }
 
+    /**
+     * @param array $middlewareGroups
+     * @return $this
+     */
+    public function setMiddlewareGroups($middlewareGroups)
+    {
+        $this->middlewareGroups = $middlewareGroups;
+        return $this;
+    }
+
+
+    /**
+     * @param array $middleware
+     * @return $this
+     */
+    public function setMiddleware($middleware)
+    {
+        $this->middleware = $middleware;
+        return $this;
+    }
+
+
+    /**
+     * 对所有路由有效
+     * @param array $middleware
+     * @return $this
+     */
+    public function setMiddlewarePriority($middleware)
+    {
+        $this->middlewarePriority = $middleware;
+        return $this;
+    }
     /**
      * @return Container
      */
@@ -274,6 +343,7 @@ class RouteCollection implements \IteratorAggregate, \Countable
      *
      * @param Request $request
      * @return Response
+     * @throws \Exception
      */
     public function dispatch(Request $request)
     {
@@ -301,8 +371,12 @@ class RouteCollection implements \IteratorAggregate, \Countable
         if (is_null($this->container)) {
             $this->container = new Container();
         }
-        $resolver = new ControllerResolver($this->container);
-        return $resolver->resolver($route, $request);
+        $resolver = new ControllerResolver($this->container,[
+            'middleware' => $this->middleware,
+            'middlewareGroups' => $this->middlewareGroups,
+            'middlewarePriority' => $this->middlewarePriority,
+        ]);
+        return $resolver->resolve($route, $request);
     }
 
     /**
@@ -310,6 +384,7 @@ class RouteCollection implements \IteratorAggregate, \Countable
      *
      * @param  Request $request
      * @return Route
+     * @throws \Exception
      */
     protected function findRoute(Request $request)
     {

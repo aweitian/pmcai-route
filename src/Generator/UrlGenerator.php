@@ -130,7 +130,7 @@ class UrlGenerator implements UrlGeneratorInterface, ConfigurableRequirementsInt
      */
     public function generate($name, $parameters = array(), $referenceType = self::ABSOLUTE_PATH)
     {
-        if (null === $route = $this->routes->get($name)) {
+        if (null === $route = $this->routes->getRoute($name)) {
             throw new RouteNotFoundException(sprintf('Unable to generate a URL for the named route "%s" as such route does not exist.', $name));
         }
 
@@ -307,7 +307,7 @@ class UrlGenerator implements UrlGeneratorInterface, ConfigurableRequirementsInt
                         if ($this->logger) {
                             $this->logger->error($message);
                         }
-                        return;
+                        return "";
                     }
                     $url = $token[1].$mergedParams[$token[3]].$url;
                     $optional = false;
@@ -357,7 +357,7 @@ class UrlGenerator implements UrlGeneratorInterface, ConfigurableRequirementsInt
                             if ($this->logger) {
                                 $this->logger->error($message);
                             }
-                            return;
+                            return "";
                         }
                         $routeHost = $token[1].$mergedParams[$token[3]].$routeHost;
                     } else {
