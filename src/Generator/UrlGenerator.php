@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Tian\Routing\Generator;
+namespace Tian\Route\Generator;
 
 use Tian\Route\RouteCollection;
 use Tian\Http\RequestContext;

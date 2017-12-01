@@ -20,4 +20,8 @@ namespace Tian\Route\Exception;
  */
 class ResourceNotFoundException extends \RuntimeException implements ExceptionInterface
 {
+    public function __construct($message = "ResourceNotFoundException", $code = 0, Throwable $previous = null)
+    {
+        parent::__construct($message, $code, $previous);
+    }
 }

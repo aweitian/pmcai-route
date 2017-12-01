@@ -18,4 +18,8 @@ namespace Tian\Route\Exception;
  */
 class InvalidParameterException extends \InvalidArgumentException implements ExceptionInterface
 {
+    public function __construct($message = "InvalidParameterException", $code = 0, Throwable $previous = null)
+    {
+        parent::__construct($message, $code, $previous);
+    }
 }

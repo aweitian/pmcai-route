@@ -19,4 +19,8 @@ namespace Tian\Route\Exception;
  */
 class MissingMandatoryParametersException extends \InvalidArgumentException implements ExceptionInterface
 {
+    public function __construct($message = "MissingMandatoryParametersException", $code = 0, Throwable $previous = null)
+    {
+        parent::__construct($message, $code, $previous);
+    }
 }

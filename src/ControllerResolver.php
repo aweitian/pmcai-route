@@ -173,7 +173,7 @@ class ControllerResolver
             $class = $namespace;
             $method = $callback[1];
             if (!class_exists($class)) {
-                $e = new InvalidActionException();
+                $e = new InvalidActionException($class .' Not found.');
                 $e->setClass($class);
                 throw $e;
             }

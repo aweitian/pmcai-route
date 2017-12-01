@@ -9,12 +9,12 @@
  * file that was distributed with this source code.
  */
 
-namespace Tian\Routing\Generator;
+namespace Tian\Route\Generator;
 
-use Tian\Routing\Exception\InvalidParameterException;
-use Tian\Routing\Exception\MissingMandatoryParametersException;
-use Tian\Routing\Exception\RouteNotFoundException;
-use Tian\Routing\RequestContextAwareInterface;
+use Tian\Route\Exception\InvalidParameterException;
+use Tian\Route\Exception\MissingMandatoryParametersException;
+use Tian\Route\Exception\RouteNotFoundException;
+
 
 /**
  * UrlGeneratorInterface is the interface that all URL generator classes must implement.

@@ -141,23 +141,55 @@ class UrlMatcherTest extends \PHPUnit_Framework_TestCase
     public function testMiddleware()
     {
         $router = new RouteCollection();
-        $router->get('/{bar}/{lol}',["\\Tian\\Route\\Tests\\Matcher\\classParameter@middleware",
-            "middleware" => [
-                function (Request $request,$next) {
+        $router->setMiddleware([
+            'test' => function(Request $request,$next) {
+                $request->attributes->add([
+                    'test' => 'test - Middleware'
+                ]);
+                return $next($request);
+            }
+        ]);
+
+        $router->setMiddlewareGroups([
+            'testGrp' => [
+                function(Request $request,$next) {
                     $request->attributes->add([
-                        'aa' => 'bb'
+                        'testGrp1' => 'testGrp1 - Middleware'
+                    ]);
+                    return $next($request);
+                },
+                function(Request $request,$next) {
+                    $request->attributes->add([
+                        'testGrp2' => 'testGrp2 - Middleware'
                     ]);
                     return $next($request);
                 }
             ]
         ]);
+        $router->get('/{bar}/{lol}',["\\Tian\\Route\\Tests\\Matcher\\classParameter@middleware",
+            "middleware" => [
+                function (Request $request,$next) {
+
+                    $request->attributes->add([
+                        'aa' => 'bb'
+                    ]);
+                    return $next($request);
+                },
+                "test",
+                "testGrp"
+            ]
+        ]);
         $response = $router->dispatch(Request::create("/abar/blol"));
         $this->assertEquals("abar-blol",$response->getContent());
+//        var_dump($router->getRequest()->attributes->all());
         $this->assertEquals("bb",$router->getRequest()->attributes->get('aa'));
+        $this->assertEquals("testGrp2 - Middleware",$router->getRequest()->attributes->get('testGrp2'));
+        $this->assertEquals("test - Middleware",$router->getRequest()->attributes->get('test'));
     }
     public function testGroup()
     {
         $router = new RouteCollection();
+
         $router->group(['a' => 'b'],function (RouteCollection $router){
             $router->get('/{bar}/{lol}',["\\Tian\\Route\\Tests\\Matcher\\classParameter@middleware",
                 "middleware" => [
@@ -172,7 +204,7 @@ class UrlMatcherTest extends \PHPUnit_Framework_TestCase
             $response = $router->dispatch(Request::create("/abar/blol"));
             $this->assertEquals("abar-blol",$response->getContent());
             $this->assertEquals("bb",$router->getRequest()->attributes->get('aa'));
-            $call = $router->getContainer()->make('route.matched.action');
+            $call = $router->getContainer()->make('router.matched.action');
             $this->assertEquals('b',($call['a']));
         });
 

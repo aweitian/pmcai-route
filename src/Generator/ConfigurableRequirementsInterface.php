@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Tian\Routing\Generator;
+namespace Tian\Route\Generator;
 
 /**
  * ConfigurableRequirementsInterface must be implemented by URL generators that

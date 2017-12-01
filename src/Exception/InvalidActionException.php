@@ -20,7 +20,7 @@ namespace Tian\Route\Exception;
 class InvalidActionException extends \InvalidArgumentException implements ExceptionInterface
 {
     protected $className;
-    public function __construct($message = "", $code = 0, Throwable $previous = null)
+    public function __construct($message = "InvalidActionException", $code = 0, Throwable $previous = null)
     {
         parent::__construct($message, $code, $previous);
     }
