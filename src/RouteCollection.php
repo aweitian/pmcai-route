@@ -204,12 +204,14 @@ class RouteCollection implements \IteratorAggregate, \Countable
      *
      * @param string $name The route name
      * @param Route $route A Route instance
+     * @return Route
      */
     public function add($name, Route $route)
     {
         unset($this->routes[$name]);
 
         $this->routes[$name] = $route;
+        return $route;
     }
 
     /**
