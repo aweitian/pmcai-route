@@ -12,10 +12,7 @@ namespace Aw\Routing\Parse;
 class Pmi extends Parse
 {
     protected $moduleSkip = 0;
-
     protected $module = "";
-
-
     protected $info = "";
     protected $path;
 
@@ -46,31 +43,11 @@ class Pmi extends Parse
     }
 
     /**
-     * @param string $module
-     * @return Pmi
-     */
-    public function setModule($module)
-    {
-        $this->module = $module;
-        return $this;
-    }
-
-    /**
      * @return string
      */
     public function getInfo()
     {
         return $this->info;
-    }
-
-    /**
-     * @param string $info
-     * @return Pmi
-     */
-    public function setInfo($info)
-    {
-        $this->info = $info;
-        return $this;
     }
 
     /**
@@ -106,20 +83,10 @@ class Pmi extends Parse
 
 
     /**
-     * @return string
+     * @return \Aw\Routing\UrlGenerator\Pmi
      */
     public function getUrl()
     {
-        $ret = '';
-        if ($this->http_entry) {
-            $ret .= '/' . trim($this->http_entry, '/');
-        }
-        if (!$this->moduleSkip && $this->module) {
-            $ret .= '/' . trim($this->module, '/');
-        }
-        if ($this->info) {
-            $ret .= '/' . trim($this->info, '/');
-        }
-        return $ret;
+        return new \Aw\Routing\UrlGenerator\Pmi($this->http_entry,$this->module,$this->info,$this->moduleSkip);
     }
 }

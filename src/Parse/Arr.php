@@ -10,8 +10,7 @@ namespace Aw\Routing\Parse;
 
 class Arr extends Parse
 {
-    public $raw;
-    private $arr;
+    protected $arr;
 
     /**
      * @param $path
@@ -27,31 +26,6 @@ class Arr extends Parse
     }
 
     /**
-     * 返回长度
-     *
-     * @return number
-     */
-    public function getLength()
-    {
-        return count($this->arr);
-    }
-
-    /**
-     * 长度不在数组长度之内，在后面添加
-     *
-     * @param int $index
-     * @param string $pathname
-     */
-    public function set($index, $pathname)
-    {
-        if ($index < $this->getLength()) {
-            $this->arr [$index] = $pathname;
-        } else {
-            $this->arr [] = $pathname;
-        }
-    }
-
-    /**
      * 不存在返回NULL
      *
      * @param int $index
@@ -59,7 +33,7 @@ class Arr extends Parse
      */
     public function get($index)
     {
-        if ($index < $this->getLength()) {
+        if ($index < count($this->arr)) {
             return $this->arr [$index];
         } else {
             return null;
@@ -67,14 +41,11 @@ class Arr extends Parse
     }
 
     /**
-     * 返回URL PATH部分
-     *
-     * @return string
+     * @return \Aw\Routing\UrlGenerator\Arr
      */
     public function getUrl()
     {
-        $url = '/' . $this->getHttpEntryUrl() . '/' . join("/", $this->arr);
-        return $url;
+        return new \Aw\Routing\UrlGenerator\Arr($this->http_entry,$this->arr);
     }
 
 }

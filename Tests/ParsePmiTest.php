@@ -30,8 +30,7 @@ class ParsePmiTest extends \PHPUnit_Framework_TestCase
 
         $parse->setModuleSkipOff();
         $this->assertTrue($parse->parse('/wx/ctl/act/info1/info2'));
-        $parse->setInfo('info/ggb');
-        $this->assertEquals('/wx/ctl/info/ggb',$parse->getUrl());
+        $this->assertEquals('/wx/ctl/info/ggb',$parse->getUrl()->setInfo('info/ggb')->getUrl());
     }
 
 }

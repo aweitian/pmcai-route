@@ -21,9 +21,8 @@ class ParseArrTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('ctl',$parse->get(0));
         $this->assertEquals('info1',$parse->get(2));
-        $parse->set(2,'info11');
-
-        $this->assertEquals('/wx/ctl/act/info11/info2',$parse->getUrl());
+        $url = $parse->getUrl()->set(2,'info11');
+        $this->assertEquals('/wx/ctl/act/info11/info2',$url->getUrl());
     }
 
 }

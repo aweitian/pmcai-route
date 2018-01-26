@@ -80,7 +80,6 @@ class ParsePmcaiTest extends \PHPUnit_Framework_TestCase
         $parse->setMask('ca');
         $parse->setPrefix('/p1/p2');
         $this->assertTrue($parse->parse('/p1/p2'));
-        $parse->setControl('control');
-        $this->assertEquals('/p1/p2/control',$parse->getUrl());
+        $this->assertEquals('/p1/p2/control',$parse->getUrl()->setControl('control')->getUrl());
     }
 }

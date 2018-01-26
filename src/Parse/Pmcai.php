@@ -101,8 +101,6 @@ class Pmcai extends Parse
         }
     }
 
-
-
     /**
      * @param $path
      * @return bool
@@ -145,46 +143,11 @@ class Pmcai extends Parse
     }
 
     /**
-     *
-     * @param string $v
-     * @return $this
+     * @return \Aw\Routing\UrlGenerator\Pmcai
      */
-    public function setControl($v)
-    {
-        $this->control = $v;
-        return $this;
-    }
-
-    /**
-     *
-     * @param string $v
-     * @return $this
-     */
-    public function setAction($v)
-    {
-        $this->action = $v;
-        return $this;
-    }
-
     public function getUrl()
     {
-        $ret = '';
-        if ($this->http_entry) {
-            $ret .= '/' . trim($this->http_entry, '/');
-        }
-        if (!empty ($this->module)) {
-            $ret .= '/' . $this->module;
-        }
-        if ($this->control) {
-            $ret .= '/' . $this->control;
-        }
-        if ($this->action) {
-            $ret .= '/' . $this->action;
-        }
-        if (!empty ($this->info)) {
-            $ret .= '/' . implode('/', $this->info);
-        }
-        return $ret;
+         return new \Aw\Routing\UrlGenerator\Pmcai($this->http_entry,$this->module,$this->control,$this->action,$this->info);
     }
 
     public static function isValidMask($mask)
