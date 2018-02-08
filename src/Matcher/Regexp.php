@@ -15,9 +15,14 @@ class Regexp implements IRequestMatcher
 {
     protected $regexp;
     protected $matches = array();
-    public function __construct($regexp)
+    public function __construct(array $data = array())
     {
-        $this->regexp = $regexp;
+        $attrs = 'regexp';
+        foreach (explode('|', $attrs) as $attr) {
+            if (array_key_exists($attr, $data)) {
+                $this->{$attr} = $data[$attr];
+            }
+        }
     }
 
     /**
@@ -28,5 +33,10 @@ class Regexp implements IRequestMatcher
     {
         $url = $request->getPath();
         return !! preg_match($this->regexp,$url,$this->matches);
+    }
+
+    public function getMatches()
+    {
+        return $this->matches;
     }
 }

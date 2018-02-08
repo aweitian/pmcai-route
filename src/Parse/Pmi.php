@@ -11,7 +11,7 @@ namespace Aw\Routing\Parse;
 
 class Pmi extends Parse
 {
-    protected $moduleSkip = 0;
+    protected $moduleSkip = false;
     protected $module = "";
     protected $info = "";
     protected $path;

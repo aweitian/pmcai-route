@@ -15,9 +15,14 @@ class Equal implements IRequestMatcher
 {
     protected $url;
 
-    public function __construct($url)
+    public function __construct(array $data = array())
     {
-        $this->url = $url;
+        $attrs = 'url';
+        foreach (explode('|', $attrs) as $attr) {
+            if (array_key_exists($attr, $data)) {
+                $this->{$attr} = $data[$attr];
+            }
+        }
     }
 
     /**

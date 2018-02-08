@@ -10,34 +10,37 @@ namespace Aw\Routing\Matcher;
 
 
 use Aw\Http\Request;
+use Aw\Routing\Parse\Arr;
+use Aw\Routing\Parse\Pmcai;
+use Aw\Routing\Parse\Pmi;
 
 class Mapca implements IRequestMatcher
 {
-    protected $prefix;
-    protected $mask;
-    protected $loc_map;
-    protected $namespace_map;
-    protected $ctrl_tpl;
-    protected $act_tpl;
-
+    /**
+     * @var mixed
+     */
+    public $matcher;
+    protected $prefix = '';
+    protected $mask = 'ca';
+    protected $loc_map = array();
+    protected $namespace_map = array();
+    protected $ctrl_tpl = '{}Controller';
+    protected $act_tpl = '{}Action';
+    protected $type = 'pmcai';//pmi|arr|pmcai
+    protected $moduleSkip = true;
     /**
      * URL格式 为 {prefix}{m}{c}{a}
      * Mapca constructor.
-     * @param string $prefix
-     * @param string $mask
-     * @param array $loc_map
-     * @param array $namespace_map
-     * @param string $ctrl_tpl
-     * @param string $act_tpl
+     * @param array $data
      */
-    public function __construct($prefix = "", $mask = "ca", array $loc_map = array(), array $namespace_map = array(), $ctrl_tpl = '{}Controller', $act_tpl = '{}Action')
+    public function __construct(array $data = array())
     {
-        $this->prefix = $prefix;
-        $this->mask = $mask;
-        $this->loc_map = $loc_map;
-        $this->namespace_map = $namespace_map;
-        $this->ctrl_tpl = $ctrl_tpl;
-        $this->act_tpl = $act_tpl;
+        $attrs = 'prefix|mask|loc_map|namespace_map|ctrl_tpl|act_tpl|moduleSkip|type';
+        foreach (explode('|', $attrs) as $attr) {
+            if (array_key_exists($attr, $data)) {
+                $this->{$attr} = $data[$attr];
+            }
+        }
     }
 
 
@@ -48,6 +51,29 @@ class Mapca implements IRequestMatcher
     public function match(Request $request)
     {
         $url = $request->getPath();
-        return !!preg_match($this->regexp, $url, $this->matches);
+        switch ($this->type)
+        {
+            case 'pmcai':
+                $this->matcher = new Pmcai(array(
+                    'http_entry' => $this->prefix,
+                    'mask' => $this->mask
+                ));
+                return $this->matcher->parse($url);
+            case 'pmi':
+                $this->matcher = new Pmi();
+                if ($this->moduleSkip)
+                {
+                    $this->matcher->setModuleSkipOn();
+                }
+                else
+                {
+                    $this->matcher->setModuleSkipOff();
+                }
+                return $this->matcher->parse($url);
+            case 'arr':
+                $this->matcher = new Arr();
+                return $this->matcher->parse($url);
+        }
+        return false;
     }
 }
