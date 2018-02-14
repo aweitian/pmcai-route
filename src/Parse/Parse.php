@@ -14,6 +14,9 @@
 
 namespace Aw\Routing\Parse;
 
+use Aw\Http\Request;
+use Aw\Routing\Matcher\StartWith;
+
 class Parse
 {
     protected $http_entry = "";
@@ -44,7 +47,8 @@ class Parse
     public function isValidPath($path)
     {
         if ($this->http_entry_len) {
-            if (substr($path, 0, $this->http_entry_len) !== $this->http_entry) {
+            $m = new StartWith(array('prefix' => $this->http_entry));
+            if (!$m->match(new Request($path))) {
                 return false;
             } else {
                 $this->realpath = substr($path, $this->http_entry_len);

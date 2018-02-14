@@ -14,20 +14,20 @@ use Aw\Routing\Parse\Arr;
 use Aw\Routing\Parse\Pmcai;
 use Aw\Routing\Parse\Pmi;
 
-class Mapca implements IRequestMatcher
+class Mapca implements IMatcher
 {
+    const TYPE_PMCAI = 'pmcai';
+    const TYPE_PMI = 'pmi';
+    const TYPE_ARR = 'arr';
     /**
      * @var mixed
      */
     public $matcher;
     protected $prefix = '';
     protected $mask = 'ca';
-    protected $loc_map = array();
-    protected $namespace_map = array();
-    protected $ctrl_tpl = '{}Controller';
-    protected $act_tpl = '{}Action';
-    protected $type = 'pmcai';//pmi|arr|pmcai
+    protected $type = self::TYPE_PMCAI;
     protected $moduleSkip = true;
+
     /**
      * URL格式 为 {prefix}{m}{c}{a}
      * Mapca constructor.
@@ -35,7 +35,7 @@ class Mapca implements IRequestMatcher
      */
     public function __construct(array $data = array())
     {
-        $attrs = 'prefix|mask|loc_map|namespace_map|ctrl_tpl|act_tpl|moduleSkip|type';
+        $attrs = 'prefix|mask|moduleSkip|type';
         foreach (explode('|', $attrs) as $attr) {
             if (array_key_exists($attr, $data)) {
                 $this->{$attr} = $data[$attr];
@@ -45,34 +45,43 @@ class Mapca implements IRequestMatcher
 
 
     /**
+     * 匹配成功设置request->carry['matcher']
      * @param Request $request
      * @return bool
      */
     public function match(Request $request)
     {
         $url = $request->getPath();
-        switch ($this->type)
-        {
-            case 'pmcai':
+        switch ($this->type) {
+            case self::TYPE_PMCAI:
                 $this->matcher = new Pmcai(array(
                     'http_entry' => $this->prefix,
                     'mask' => $this->mask
                 ));
-                return $this->matcher->parse($url);
-            case 'pmi':
+                if ($this->matcher->parse($url)) {
+                    $request->carry['matcher'] = $this->matcher;
+                    return true;
+                };
+                break;
+            case self::TYPE_PMI:
                 $this->matcher = new Pmi();
-                if ($this->moduleSkip)
-                {
+                if ($this->moduleSkip) {
                     $this->matcher->setModuleSkipOn();
-                }
-                else
-                {
+                } else {
                     $this->matcher->setModuleSkipOff();
                 }
-                return $this->matcher->parse($url);
-            case 'arr':
+                if ($this->matcher->parse($url)) {
+                    $request->carry['matcher'] = $this->matcher;
+                    return true;
+                };
+                break;
+            case self::TYPE_ARR:
                 $this->matcher = new Arr();
-                return $this->matcher->parse($url);
+                if ($this->matcher->parse($url)) {
+                    $request->carry['matcher'] = $this->matcher;
+                    return true;
+                };
+                break;
         }
         return false;
     }

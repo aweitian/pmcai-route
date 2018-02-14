@@ -14,63 +14,108 @@
 namespace Aw\Routing;
 
 use Aw\Http\Request;
+use Aw\Http\Response;
 use Aw\Pipeline;
+use Aw\Routing\Dispatch\IDispatcher;
+use Aw\Routing\Matcher\IMatcher;
+use Aw\Routing\Router\Middleware;
 
 
 class Route
 {
 
     /**
-     * method = 'post|get|put'
-     * host = 127.0.0.1|localhost
-     * type = equal|startwith|regexp|mapca-pmcai|mapca-pmi|mapca-arr|callback
-     * data = mxied
-     * @var array
+     * @var IMatcher $matches
      */
-    protected $matches = array();         //用于匹配的数据
-    protected $middleware = array();    //匹配成功需要通过的中间件
-    protected $action;        //通过中间件后执行的业务逻辑
+    protected $matcher;         //用于匹配的数据
+    /**
+     * @var Middleware
+     */
+    protected $middleware;    //匹配成功需要通过的中间件
+    /**
+     * @var IDispatcher
+     */
+    protected $dispatcher;        //通过中间件后执行的业务逻辑
     /**
      * @var Request
      */
     protected $request;
+    protected $action;
+    protected $privateMiddleware = array();
+
+
+    public $logs = array();
+    public $useGlobalMiddleware = true;
+
+    public function __construct(IMatcher $matcher = null, Middleware $middleware = null, $private_middleware = array(), $action = null, $useGlobalMiddleware = true)
+    {
+        $this->useGlobalMiddleware = $useGlobalMiddleware;
+        $this->matcher = $matcher;
+        $this->action = $action;
+        $this->privateMiddleware = $private_middleware;
+        $this->middleware = $middleware;
+    }
+
 
     /**
+     * @param Request $request
      * @return bool
      */
-    public function match()
+    public function match(Request $request)
     {
-        $matcher = new Matcher($this->request, $this->matches);
-        return $matcher->match();
+        if (is_null($this->matcher)) {
+            $this->logs[] = "matcher is null";
+            return false;
+        }
+        if ($this->matcher->match($request)) {
+            $this->request = $request;
+            return true;
+        }
+        return false;
     }
 
     /**
-     * @return mixed
+     * @return Response
      */
     public function route()
     {
-        $mw = new Middleware($this->middleware);
-        $dp = new Dispatcher($this->action);
+        if ($this->request == null) {
+            $this->logs[] = "request is null";
+            return new Response('request is null', 500);
+        }
+        if ($this->dispatcher == null) {
+            $this->logs[] = "dispatcher is null";
+            return new Response('dispatcher is null', 500);
+        }
+        if ($this->middleware instanceof Middleware) {
+            $mw = $this->middleware->getMiddleware($this->middleware, $this->useGlobalMiddleware);
+        } else {
+            $mw = array();
+        }
+
+        $dp = $this->dispatcher;
         $pipe = new Pipeline();
         return $pipe->send($this->request)
-            ->through($mw->getMiddleware())
-            ->then($dp->getAction());
+            ->through($mw)
+            ->then(function ($request) use ($dp) {
+                return $dp->dispatch($request);
+            });
     }
 
     /**
-     * @return array
+     * @return IMatcher
      */
     public function getMatch()
     {
-        return $this->matches;
+        return $this->matcher;
     }
 
     /**
-     * @param array $match
+     * @param IMatcher $match
      */
-    public function setMatch($match)
+    public function setMatch(IMatcher $match)
     {
-        $this->matches = $match;
+        $this->matcher = $match;
     }
 
     /**
@@ -79,14 +124,6 @@ class Route
     public function getRequest()
     {
         return $this->request;
-    }
-
-    /**
-     * @param Request $request
-     */
-    public function setRequest($request)
-    {
-        $this->request = $request;
     }
 
     /**
@@ -107,6 +144,22 @@ class Route
 
 
     /**
+     * @return IDispatcher
+     */
+    public function getDispatcher()
+    {
+        return $this->dispatcher;
+    }
+
+    /**
+     * @param IDispatcher $dispatcher
+     */
+    public function setDispatcher(IDispatcher $dispatcher)
+    {
+        $this->dispatcher = $dispatcher;
+    }
+
+    /**
      * @return mixed
      */
     public function getAction()
@@ -116,9 +169,29 @@ class Route
 
     /**
      * @param mixed $action
+     * @return Route
      */
     public function setAction($action)
     {
         $this->action = $action;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPrivateMiddleware()
+    {
+        return $this->privateMiddleware;
+    }
+
+    /**
+     * @param array $privateMiddleware
+     * @return Route
+     */
+    public function setPrivateMiddleware($privateMiddleware)
+    {
+        $this->privateMiddleware = $privateMiddleware;
+        return $this;
     }
 }

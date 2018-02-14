@@ -6,7 +6,8 @@
  * Time: 11:26
  * 这个类计算MW
  */
-namespace Aw\Routing;
+
+namespace Aw\Routing\Router;
 class Middleware
 {
     protected $pipelines = array();
@@ -31,8 +32,14 @@ class Middleware
         }
     }
 
-    public function getMiddleware()
+    public function getMiddleware($private = null, $global = null)
     {
+        if (!is_null($private)) {
+            $this->setPrivate($private);
+        }
+        if (is_bool($global)) {
+            $this->setUseGlobal($global);
+        }
         $ret = array();
         if ($this->use_global === true) {
             $ret = $this->global;
@@ -41,7 +48,12 @@ class Middleware
         if (is_string($mw))
             $mw = array($mw);
         foreach ($mw as $item) {
-            $ret[] = $this->getMw($item);
+            $cell = $this->getMw($item);
+            if (is_array($cell)) {
+                $ret = array_merge($ret, $cell);
+            } else {
+                $ret[] = $cell;
+            }
         }
         return $ret;
     }

@@ -43,7 +43,7 @@ class Matcher
      */
     public function match()
     {
-        if (!is_null($this->request)) {
+        if (is_null($this->request)) {
             $this->log[] = 'request is null';
             return false;
         }

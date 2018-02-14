@@ -11,7 +11,7 @@ namespace Aw\Routing\Matcher;
 
 use Aw\Http\Request;
 
-interface IRequestMatcher
+interface IMatcher
 {
     /**
      * @param Request $request

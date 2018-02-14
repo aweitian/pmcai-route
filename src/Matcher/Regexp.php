@@ -11,10 +11,12 @@ namespace Aw\Routing\Matcher;
 
 use Aw\Http\Request;
 
-class Regexp implements IRequestMatcher
+class Regexp implements IMatcher
 {
+    const DELIMITOR = '#';
     protected $regexp;
     protected $matches = array();
+
     public function __construct(array $data = array())
     {
         $attrs = 'regexp';
@@ -31,8 +33,14 @@ class Regexp implements IRequestMatcher
      */
     public function match(Request $request)
     {
-        $url = $request->getPath();
-        return !! preg_match($this->regexp,$url,$this->matches);
+        if (!$this->regexp) {
+            return false;
+        }
+        if (substr($this->regexp, 0, 1) === self::DELIMITOR && substr($this->regexp, -1, 1) === self::DELIMITOR) {
+            $url = $request->getPath();
+            return !!preg_match($this->regexp, $url, $this->matches);
+        }
+        return false;
     }
 
     public function getMatches()

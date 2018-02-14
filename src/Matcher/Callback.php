@@ -11,13 +11,16 @@ namespace Aw\Routing\Matcher;
 
 use Aw\Http\Request;
 
-class StartWith implements IRequestMatcher
+class Callback implements IMatcher
 {
-    protected $prefix;
+    protected $callback;
 
-    public function __construct(array $data = array())
+    /**
+     * @param array $data
+     */
+    public function __construct($data = array())
     {
-        $attrs = 'prefix';
+        $attrs = 'callback';
         foreach (explode('|', $attrs) as $attr) {
             if (array_key_exists($attr, $data)) {
                 $this->{$attr} = $data[$attr];
@@ -25,13 +28,15 @@ class StartWith implements IRequestMatcher
         }
     }
 
+
     /**
      * @param Request $request
      * @return bool
      */
     public function match(Request $request)
     {
-        $url = $request->getPath();
-        return substr($url, 0, strlen($url)) === $this->prefix;
+        $callback = $this->callback;
+        if (!is_callable($callback)) return false;
+        return !!$callback($request);
     }
 }

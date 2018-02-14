@@ -11,13 +11,13 @@ namespace Aw\Routing\Matcher;
 
 use Aw\Http\Request;
 
-class Equal implements IMatcher
+class StartWith implements IMatcher
 {
-    protected $url;
+    protected $prefix;
 
     public function __construct(array $data = array())
     {
-        $attrs = 'url';
+        $attrs = 'prefix';
         foreach (explode('|', $attrs) as $attr) {
             if (array_key_exists($attr, $data)) {
                 $this->{$attr} = $data[$attr];
@@ -31,7 +31,10 @@ class Equal implements IMatcher
      */
     public function match(Request $request)
     {
+        $prefix = rtrim($this->prefix, "/");
         $url = $request->getPath();
-        return rtrim($url, '/') === rtrim($this->url, '/');
+        if ($url == $prefix) return true;
+        $prefix = $prefix . '/';
+        return substr($url, 0, strlen($prefix)) === $prefix;
     }
 }
