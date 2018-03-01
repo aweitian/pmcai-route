@@ -50,6 +50,11 @@ class AtCall implements IDispatcher
             return new Response("class $cls does not exists", 500);
         }
         $cls_ins = new $cls();
-        return $cls_ins->$act($request);
+        $ret = $cls_ins->$act($request);
+        if ($ret instanceof Response) {
+            return $ret;
+        } else {
+            return new Response($ret);
+        }
     }
 }

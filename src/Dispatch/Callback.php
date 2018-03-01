@@ -35,6 +35,11 @@ class Callback implements IDispatcher
         $callback = $this->callback;
         if (!is_callable($callback))
             throw new \Exception('callback is not callable');
-        return $callback($request);
+        $ret = $callback($request);
+        if ($ret instanceof Response) {
+            return $ret;
+        } else {
+            return new Response($ret);
+        }
     }
 }

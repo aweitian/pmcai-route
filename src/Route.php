@@ -88,11 +88,10 @@ class Route
             return new Response('dispatcher is null', 500);
         }
         if ($this->middleware instanceof Middleware) {
-            $mw = $this->middleware->getMiddleware($this->middleware, $this->useGlobalMiddleware);
+            $mw = $this->middleware->getMiddleware($this->privateMiddleware, $this->useGlobalMiddleware);
         } else {
             $mw = array();
         }
-
         $dp = $this->dispatcher;
         $pipe = new Pipeline();
         return $pipe->send($this->request)

@@ -68,11 +68,16 @@ class PmcaiDispatcher implements IDispatcher
                 $rc = new ReflectionClass($ctl_class);
                 $method = self::getAct($data);
                 if (!$rc->hasMethod($method)) {
-                    $this->logs[] = "$method not found";
-                    return new Response("$method not found", 500);
+                    $this->logs[] = "Method $method not found";
+                    return new Response("Method $method not found", 500);
                 }
                 $method_ins = $rc->getMethod($method);
-                return $method_ins->invoke($rc->newInstance());
+                $ret = $method_ins->invoke($rc->newInstance());
+                if ($ret instanceof Response) {
+                    return $ret;
+                } else {
+                    return new Response($ret);
+                }
             } else {
                 $this->logs[] = "request is not via pmcai parser";
             }
@@ -106,10 +111,10 @@ class PmcaiDispatcher implements IDispatcher
         } else {
             $ctl_tpl = PmcaiDispatcher::DEFAULT_CONTROL_TPL;
         }
-        if (isset($data['ctl'])) {
+        if (isset($data['ctl']) && $data['ctl']) {
             $ctl = $data['ctl'];
         } else {
-            $ctl = PmcaiDispatcher::DEFAULT_ACTION;
+            $ctl = PmcaiDispatcher::DEFAULT_CONTROL;
         }
         return $ns . str_replace('{}', $ctl, $ctl_tpl);
     }
@@ -145,7 +150,7 @@ class PmcaiDispatcher implements IDispatcher
         } else {
             $act_tpl = PmcaiDispatcher::DEFAULT_ACTION_TPL;
         }
-        if (isset($data['act'])) {
+        if (isset($data['act']) && $data['act']) {
             $act = $data['act'];
         } else {
             $act = PmcaiDispatcher::DEFAULT_ACTION;
