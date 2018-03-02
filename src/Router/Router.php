@@ -19,8 +19,12 @@ namespace Aw\Routing\Router;
 use Aw\Http\Request;
 use Aw\Http\Response;
 use Aw\Routing\Dispatch\IDispatcher;
+use Aw\Routing\Dispatch\PmcaiDispatcher;
+use Aw\Routing\Matcher\AndCondition;
+use Aw\Routing\Matcher\Callback;
 use Aw\Routing\Matcher\IMatcher;
 use Aw\Routing\Matcher\Mapca;
+use Aw\Routing\Parse\Pmcai;
 use Aw\Routing\Route;
 
 class Router
@@ -29,7 +33,7 @@ class Router
     const TYPE_MATCHER_STARTWITH = 1;
     const TYPE_MATCHER_REGEXP = 2;
     const TYPE_MATCHER_PMCAI = 3;
-    const DEFAULT_CONTROL_NAMESPACE = "\\App\\Controller\\";
+
     protected $routes = array();
     protected $mw_defined = array();
     protected $mw_global = array();
@@ -110,21 +114,40 @@ class Router
      * @param string $prefix
      * @param array $middleware
      * @param array $dispatch_param namespace|namespace_map|ctl_tpl|act_tpl
-     * @param array $matcher_param prefix|mask|moduleSkip|type
+     * @param array $matcher_param prefix|mask|moduleSkip|type|check_dispatch
      * @param bool $useGlobalMiddleware
      * @return Route
      */
     public function pmcai($prefix = "/", $middleware = array(), $dispatch_param = array(), $matcher_param = array(), $useGlobalMiddleware = true)
     {
+        $request = $this->request;
         $matcher_param["prefix"] = $prefix;
         $matcher = new Mapca(array_merge($matcher_param, array(
             "mask" => "ca",
             "type" => Mapca::TYPE_PMCAI
         )));
+        if (array_key_exists('check_dispatch', $matcher_param) && $matcher_param['check_dispatch'] === true) {
+            $and_matcher = new AndCondition();
+            $and_matcher->add($matcher);
+            $and_matcher->add(new Callback(array(
+                "callback" => function () use ($dispatch_param, $request) {
+                    $ca = array();
+                    /**
+                     * @var Pmcai $matcher
+                     */
+                    $matcher = $request->carry['matcher'];
+                    $ca['module'] = $matcher->getModule();
+                    $ca['ctl'] = $matcher->getControl();
+                    $ca['act'] = $matcher->getAction();
+                    $arg = array_merge($dispatch_param, $ca);
+                    $ret = PmcaiDispatcher::isDispatchable($arg);
+                    return $ret;
+                }
+            )));
+            $matcher = $and_matcher;
+        }
         //Route的ACTION参数传递数据类型过去,会被识别为pmcai Dispatcher
-        $route = new Route($matcher, $this->middleware, $middleware, array_merge($dispatch_param, array(
-            "namespace" => self::DEFAULT_CONTROL_NAMESPACE
-        )), $useGlobalMiddleware);
+        $route = new Route($matcher, $this->middleware, $middleware, $dispatch_param, $useGlobalMiddleware);
         return $this->add($route);
     }
 

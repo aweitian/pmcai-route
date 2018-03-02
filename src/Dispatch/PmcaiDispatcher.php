@@ -22,6 +22,7 @@ class PmcaiDispatcher implements IDispatcher
     const DEFAULT_ACTION = 'index';
     const DEFAULT_CONTROL_TPL = '{}Control';
     const DEFAULT_ACTION_TPL = '{}Action';
+    const DEFAULT_CONTROL_NAMESPACE = "\\App\\Controller\\";
     public $logs = array();
     protected $namespace;
     protected $namespace_map = array();
@@ -89,7 +90,8 @@ class PmcaiDispatcher implements IDispatcher
     }
 
     /**
-     * @param array $data namespace(必须有)|ctl_tpl|act_tpl|ctl|act|namespace_map
+     * 按照参数检查方法是否存在
+     * @param array $data namespace|ctl_tpl|act_tpl|module|ctl|act|namespace_map
      * @return bool
      */
     public static function isDispatchable(array $data = array())
@@ -128,7 +130,7 @@ class PmcaiDispatcher implements IDispatcher
         if (isset($data['namespace']) && $data['namespace']) {
             return $data['namespace'];
         }
-        return false;
+        return self::DEFAULT_CONTROL_NAMESPACE;
     }
 
     protected static function getModule($data)
