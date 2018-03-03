@@ -191,7 +191,11 @@ class Router
          */
         foreach ($this->routes as $route) {
             if ($route->match($this->request)) {
-                $route->setDispatcher(DispatcherFactory::CreateByAction($route->getAction()));
+                try {
+                    $route->setDispatcher(DispatcherFactory::CreateByAction($route->getAction()));
+                } catch (\Exception $e) {
+                    return new Response($e->getMessage(), 500);
+                }
                 $response = $route->route();
                 if ($response instanceof Response) {
                     return $response;

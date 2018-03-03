@@ -19,6 +19,7 @@ class DispatcherFactory
     /**
      * @param $action
      * @return IDispatcher
+     * @throws \Exception
      */
     public static function CreateByAction($action)
     {
@@ -29,5 +30,6 @@ class DispatcherFactory
         } else if (is_string($action)) {
             return new AtCall($action);
         }
+        throw new \Exception("invalid action:$action");
     }
 }

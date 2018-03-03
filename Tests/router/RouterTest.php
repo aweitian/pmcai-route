@@ -50,6 +50,62 @@ namespace {
 
         }
 
+        public function testActDef()
+        {
+            $defined = array(
+                function ($request, $next) {
+                    $request->carry['df-mw-1'] = 'ok';
+                    return $next($request);
+                },
+                function ($request, $next) {
+                    $request->carry['df-mw-2'] = 'ok';
+                    return $next($request);
+                }
+            );
+            $g = array(
+                function ($request, $next) {
+                    $request->carry['g-mw-2'] = 'ok';
+                    return $next($request);
+                }
+            );
+            $request = new Request('/');
+            $router = new Router($request, $defined, $g);
+            $router->get('/', 'foo');
+            $router->post("/post", function () {
+                return "POST";
+            });
+            $this->assertEquals("index", $router->run()->getContent());
+            $this->assertEquals($request->carry['g-mw-2'], 'ok');
+        }
+
+        public function testAct()
+        {
+            $defined = array(
+                function ($request, $next) {
+                    $request->carry['df-mw-1'] = 'ok';
+                    return $next($request);
+                },
+                function ($request, $next) {
+                    $request->carry['df-mw-2'] = 'ok';
+                    return $next($request);
+                }
+            );
+            $g = array(
+                function ($request, $next) {
+                    $request->carry['g-mw-2'] = 'ok';
+                    return $next($request);
+                }
+            );
+            $request = new Request('/');
+            $router = new Router($request, $defined, $g);
+            $router->get('/', 'foo@uu');
+            $router->post("/post", function () {
+                return "POST";
+            });
+            $this->assertEquals("uug", $router->run()->getContent());
+            $this->assertEquals($request->carry['g-mw-2'], 'ok');
+        }
+
         public function testPost()
         {
             $defined = array(
@@ -114,6 +170,42 @@ namespace {
             ));
             $this->assertEquals("f-br", $router->run()->getContent());
             $this->assertEquals($request->carry['g-mw-2'], 'ok');
+        }
+
+        public function testPmcaiGetInfo()
+        {
+            $defined = array(
+                function ($request, $next) {
+                    $request->carry['df-mw-1'] = 'ok';
+                    return $next($request);
+                },
+                function ($request, $next) {
+                    $request->carry['df-mw-2'] = 'ok';
+                    return $next($request);
+                }
+            );
+            $g = array(
+                function ($request, $next) {
+                    $request->carry['g-mw-2'] = 'ok';
+                    return $next($request);
+                }
+            );
+            $request = new Request('/foo/bar/inx/lol', 'POST');
+            $router = new Router($request, $defined, $g);
+            $router->get('/', function () {
+                return 'balabala';
+            });
+            $router->post("/post", function () {
+                return "POST";
+            });
+            $router->pmcai('/', array(), array(
+                'ctl_tpl' => '{}',
+                'act_tpl' => '{}'
+            ));
+            $this->assertEquals("f-br", $router->run()->getContent());
+            $this->assertEquals($request->carry['g-mw-2'], 'ok');
+            $this->assertEquals($request->carry['info'][0], 'inx');
+            $this->assertEquals($request->carry['info'][1], 'lol');
         }
 
 
@@ -264,6 +356,8 @@ namespace {
             ),array(
                 //"check_dispatch" => true
             ));
+
+            //这个路由不会执行到
             $router->pmcai('/', array(), array(
                 'namespace' => '\\g\\gfgg\\',
                 'ctl_tpl' => '{}',
@@ -320,18 +414,31 @@ namespace {
             ));
 
             $router->run();
-            //ACTION没有执行,因为没有路由成功,所以这个值还是2
             $this->assertEquals(g::$c,3);
         }
     }
 }
 
 namespace App\Controller {
+
+    use Aw\Http\Request;
+
     class foo
     {
-        public function bar()
+        public function bar(Request $request)
         {
+            $request->carry['info'] = $request->carry['matcher']->getInfo();
             return 'f-br';
+        }
+
+        public function index()
+        {
+            return 'index';
+        }
+
+        public function uu()
+        {
+            return 'uug';
         }
     }
 }
