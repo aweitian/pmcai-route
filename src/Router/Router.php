@@ -51,7 +51,7 @@ class Router
      * @param array $middleware_defined
      * @param array $middleware_global
      */
-    public function __construct(Request $request, $middleware_defined = array(), $middleware_global = array())
+    public function __construct(Request $request = null, $middleware_defined = array(), $middleware_global = array())
     {
         $this->request = $request;
         $this->mw_defined = $middleware_defined;
@@ -60,6 +60,16 @@ class Router
             "global" => $middleware_global,
             "defined" => $middleware_defined
         ));
+    }
+
+    /**
+     * @param Request $request
+     * @return $this
+     */
+    public function setRequest(Request $request)
+    {
+        $this->request = $request;
+        return $this;
     }
 
     /**
