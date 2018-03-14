@@ -130,17 +130,19 @@ class Router
      */
     public function pmcai($prefix = "/", $middleware = array(), $dispatch_param = array(), $matcher_param = array(), $useGlobalMiddleware = true)
     {
-        $request = $this->request;
+        $me = $this;
         $matcher_param["prefix"] = $prefix;
-        $matcher = new Mapca(array_merge($matcher_param, array(
+        $matcher = new Mapca(array_merge(array(
             "mask" => "ca",
             "type" => Mapca::TYPE_PMCAI
-        )));
+        ), $matcher_param));
         if (array_key_exists('check_dispatch', $matcher_param) && $matcher_param['check_dispatch'] === true) {
+
             $and_matcher = new AndCondition();
             $and_matcher->add($matcher);
             $and_matcher->add(new Callback(array(
-                "callback" => function () use ($dispatch_param, $request) {
+                "callback" => function () use ($dispatch_param, $me) {
+                    $request = $me->request;
                     $ca = array();
                     /**
                      * @var Pmcai $matcher
@@ -149,11 +151,13 @@ class Router
                     $ca['module'] = $matcher->getModule();
                     $ca['ctl'] = $matcher->getControl();
                     $ca['act'] = $matcher->getAction();
+
                     $arg = array_merge($dispatch_param, $ca);
                     $ret = PmcaiDispatcher::isDispatchable($arg);
                     return $ret;
                 }
             )));
+
             $matcher = $and_matcher;
         }
         //Route的ACTION参数传递数据类型过去,会被识别为pmcai Dispatcher
@@ -218,54 +222,58 @@ class Router
         return new Response('Page not found', 404);
     }
 
-    /**
-     * @param $name
-     * @return Route
-     */
-    public function getRoute($name)
-    {
-        return isset($this->routes[$name]) ? $this->routes[$name] : null;
-    }
+/**
+ * @param $name
+ * @return Route
+ */
+public
+function getRoute($name)
+{
+    return isset($this->routes[$name]) ? $this->routes[$name] : null;
+}
 
-    /**
-     * Adds a route.
-     *
-     * @param string $name The route name
-     * @param Route $route A Route instance
-     * @return Route
-     */
-    public function add(Route $route, $name = null)
-    {
-        if (is_string($name)) {
-            unset($this->routes[$name]);
-            $this->routes[$name] = $route;
-        } else {
-            $this->routes[] = $route;
-        }
-        return $route;
+/**
+ * Adds a route.
+ *
+ * @param string $name The route name
+ * @param Route $route A Route instance
+ * @return Route
+ */
+public
+function add(Route $route, $name = null)
+{
+    if (is_string($name)) {
+        unset($this->routes[$name]);
+        $this->routes[$name] = $route;
+    } else {
+        $this->routes[] = $route;
     }
+    return $route;
+}
 
-    /**
-     * Returns all routes in this collection.
-     *
-     * @return Route[] An array of routes
-     */
-    public function all()
-    {
-        return $this->routes;
-    }
+/**
+ * Returns all routes in this collection.
+ *
+ * @return Route[] An array of routes
+ */
+public
+function all()
+{
+    return $this->routes;
+}
 
-    /**
-     * Adds a route collection at the end of the current set by appending all
-     * routes of the added collection.
-     *
-     * @param Router $collection A RouteCollection instance
-     */
-    public function merge(Router $collection)
-    {
-        foreach ($collection->all() as $name => $route) {
-            unset($this->routes[$name]);
-            $this->routes[$name] = $route;
-        }
+/**
+ * Adds a route collection at the end of the current set by appending all
+ * routes of the added collection.
+ *
+ * @param Router $collection A RouteCollection instance
+ */
+public
+function merge(Router $collection)
+{
+    foreach ($collection->all() as $name => $route) {
+        unset($this->routes[$name]);
+        $this->routes[$name] = $route;
     }
+}
 }
