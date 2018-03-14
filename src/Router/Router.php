@@ -124,7 +124,7 @@ class Router
      * @param string $prefix
      * @param array $middleware
      * @param array $dispatch_param namespace|namespace_map|ctl_tpl|act_tpl
-     * @param array $matcher_param prefix|mask|moduleSkip|type|check_dispatch
+     * @param array $matcher_param prefix|mask|moduleSkip|type|module|check_dispatch
      * @param bool $useGlobalMiddleware
      * @return Route
      */
@@ -137,7 +137,6 @@ class Router
             "type" => Mapca::TYPE_PMCAI
         ), $matcher_param));
         if (array_key_exists('check_dispatch', $matcher_param) && $matcher_param['check_dispatch'] === true) {
-
             $and_matcher = new AndCondition();
             $and_matcher->add($matcher);
             $and_matcher->add(new Callback(array(

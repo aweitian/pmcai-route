@@ -27,6 +27,7 @@ class Mapca implements IMatcher
     protected $mask = 'ca';
     protected $type = self::TYPE_PMCAI;
     protected $moduleSkip = true;
+    protected $module = null;
 
     /**
      * URL格式 为 {prefix}{m}{c}{a}
@@ -35,7 +36,7 @@ class Mapca implements IMatcher
      */
     public function __construct(array $data = array())
     {
-        $attrs = 'prefix|mask|moduleSkip|type';
+        $attrs = 'prefix|mask|moduleSkip|type|module';
         foreach (explode('|', $attrs) as $attr) {
             if (array_key_exists($attr, $data)) {
                 $this->{$attr} = $data[$attr];
@@ -59,6 +60,11 @@ class Mapca implements IMatcher
                     'mask' => $this->mask
                 ));
                 if ($this->matcher->parse($url)) {
+                    if (!is_null($this->module)) {
+                        if ($this->matcher->getModule() != $this->module) {
+                            break;
+                        }
+                    }
                     $request->carry['matcher'] = $this->matcher;
                     return true;
                 };
@@ -71,6 +77,11 @@ class Mapca implements IMatcher
                     $this->matcher->setModuleSkipOff();
                 }
                 if ($this->matcher->parse($url)) {
+                    if (!$this->moduleSkip && !is_null($this->module)) {
+                        if ($this->matcher->getModule() != $this->module) {
+                            break;
+                        }
+                    }
                     $request->carry['matcher'] = $this->matcher;
                     return true;
                 };
