@@ -22,6 +22,12 @@ namespace
             $dispatcher = new AtCall("Main@Index","\\App\\Controller\\");
             $this->assertEquals("foo-bar",$dispatcher->dispatch(new Request())->getContent());
         }
+
+        public function testNsRun()
+        {
+            $dispatcher = new AtCall("\\foo\\Main@Index","\\App\\Controller\\");
+            $this->assertEquals("xx-foo-bar",$dispatcher->dispatch(new Request())->getContent());
+        }
     }
 }
 
@@ -33,6 +39,17 @@ namespace App\Controller
         public function Index()
         {
             return 'foo-bar';
+        }
+    }
+}
+
+namespace foo
+{
+    class Main
+    {
+        public function Index()
+        {
+            return 'xx-foo-bar';
         }
     }
 }

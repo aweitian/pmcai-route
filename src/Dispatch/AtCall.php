@@ -39,10 +39,10 @@ class AtCall implements IDispatcher
     {
         $arr = explode("@", $this->callback);
         if (count($arr) > 1) {
-            $cls = $this->namespace . $arr[0];
+            $cls = $this->handleNamespace($arr[0]);
             $act = $arr[1];
         } else {
-            $cls = $this->namespace . $this->callback;
+            $cls = $this->handleNamespace($this->callback);
             $act = self::DEFAULT_ACTION;
         }
         if (!class_exists($cls)) {
@@ -55,6 +55,15 @@ class AtCall implements IDispatcher
             return $ret;
         } else {
             return new Response($ret);
+        }
+    }
+
+    protected function handleNamespace($cls)
+    {
+        if (substr($cls, 0, 1) == "\\") {
+            return $cls;
+        } else {
+            return $this->namespace . $cls;
         }
     }
 }
