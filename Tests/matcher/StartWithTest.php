@@ -30,9 +30,13 @@ class StartWithTest extends \PHPUnit_Framework_TestCase
         $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc")));
         $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc/")));
         $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc/abc")));
+        $this->assertEquals("abc", $matcher->getPath());
         $this->assertFalse($matcher->match(new \Aw\Http\Request("/ggfgg/abccc")));
         $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc/cc")));
+        $this->assertEquals("cc", $matcher->getPath());
         $this->assertFalse($matcher->match(new \Aw\Http\Request("/abc/abc/ccc")));
+        $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc/cc/ff")));
+        $this->assertEquals("cc/ff", $matcher->getPath());
     }
 
 }

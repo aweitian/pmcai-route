@@ -14,6 +14,7 @@ use Aw\Http\Request;
 class StartWith implements IMatcher
 {
     protected $prefix;
+    protected $path;
 
     public function __construct(array $data = array())
     {
@@ -33,8 +34,20 @@ class StartWith implements IMatcher
     {
         $prefix = rtrim($this->prefix, "/");
         $url = $request->getPath();
-        if ($url == $prefix) return true;
+        if ($url == $prefix) {
+            $this->path = '';
+            return true;
+        }
         $prefix = $prefix . '/';
-        return substr($url, 0, strlen($prefix)) === $prefix;
+        if (substr($url, 0, strlen($prefix)) === $prefix) {
+            $this->path = substr($url, strlen($prefix));
+            return true;
+        }
+        return false;
+    }
+
+    public function getPath()
+    {
+        return $this->path;
     }
 }
