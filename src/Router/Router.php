@@ -121,6 +121,18 @@ class Router
     }
 
     /**
+     * @param $pattern
+     * @param $action
+     * @param array $middleware
+     * @param int $type
+     * @return Route
+     */
+    public function any($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL)
+    {
+        return $this->request('*', $pattern, $action, $middleware, $type);
+    }
+
+    /**
      * @param string $prefix
      * @param array $middleware
      * @param array $dispatch_param namespace|namespace_map|ctl_tpl|act_tpl
@@ -221,58 +233,54 @@ class Router
         return new Response('Page not found', 404);
     }
 
-/**
- * @param $name
- * @return Route
- */
-public
-function getRoute($name)
-{
-    return isset($this->routes[$name]) ? $this->routes[$name] : null;
-}
-
-/**
- * Adds a route.
- *
- * @param string $name The route name
- * @param Route $route A Route instance
- * @return Route
- */
-public
-function add(Route $route, $name = null)
-{
-    if (is_string($name)) {
-        unset($this->routes[$name]);
-        $this->routes[$name] = $route;
-    } else {
-        $this->routes[] = $route;
+    /**
+     * @param $name
+     * @return Route
+     */
+    public function getRoute($name)
+    {
+        return isset($this->routes[$name]) ? $this->routes[$name] : null;
     }
-    return $route;
-}
 
-/**
- * Returns all routes in this collection.
- *
- * @return Route[] An array of routes
- */
-public
-function all()
-{
-    return $this->routes;
-}
-
-/**
- * Adds a route collection at the end of the current set by appending all
- * routes of the added collection.
- *
- * @param Router $collection A RouteCollection instance
- */
-public
-function merge(Router $collection)
-{
-    foreach ($collection->all() as $name => $route) {
-        unset($this->routes[$name]);
-        $this->routes[$name] = $route;
+    /**
+     * Adds a route.
+     *
+     * @param string $name The route name
+     * @param Route $route A Route instance
+     * @return Route
+     */
+    public function add(Route $route, $name = null)
+    {
+        if (is_string($name)) {
+            unset($this->routes[$name]);
+            $this->routes[$name] = $route;
+        } else {
+            $this->routes[] = $route;
+        }
+        return $route;
     }
-}
+
+    /**
+     * Returns all routes in this collection.
+     *
+     * @return Route[] An array of routes
+     */
+    public function all()
+    {
+        return $this->routes;
+    }
+
+    /**
+     * Adds a route collection at the end of the current set by appending all
+     * routes of the added collection.
+     *
+     * @param Router $collection A RouteCollection instance
+     */
+    public function merge(Router $collection)
+    {
+        foreach ($collection->all() as $name => $route) {
+            unset($this->routes[$name]);
+            $this->routes[$name] = $route;
+        }
+    }
 }

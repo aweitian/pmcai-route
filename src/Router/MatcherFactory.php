@@ -23,27 +23,35 @@ class MatcherFactory
      * @param $data
      * @return AndCondition
      */
-    public static function CreateByMethodAndType($method,$type,$data)
+    public static function CreateByMethodAndType($method, $type, $data)
     {
         $matcher = new AndCondition();
-        $matcher->add(new Method($method));
-        switch ($type) {
-            case Router::TYPE_MATCHER_EQUAL:
-                $matcher->add(new Equal(array(
-                    'url' => $data
-                )));
-                break;
-            case Router::TYPE_MATCHER_REGEXP:
-                $matcher->add(new Regexp(array(
-                    'regexp' => Regexp::DELIMITOR . preg_quote($data, Regexp::DELIMITOR) . Regexp::DELIMITOR
-                )));
-                break;
-            case Router::TYPE_MATCHER_STARTWITH:
-                $matcher->add(new StartWith(array(
-                    'prefix' => $data
-                )));
-                break;
+        if ($method !== "*") {
+            $matcher->add(new Method($method));
+            $type_matcher = self::CreateType($type, $data);
+            if ($type_matcher != null) {
+                $matcher->add($type_matcher);
+            }
         }
         return $matcher;
+    }
+
+    private static function CreateType($type, $data)
+    {
+        switch ($type) {
+            case Router::TYPE_MATCHER_EQUAL:
+                return new Equal(array(
+                    'url' => $data
+                ));
+            case Router::TYPE_MATCHER_REGEXP:
+                return new Regexp(array(
+                    'regexp' => Regexp::DELIMITOR . preg_quote($data, Regexp::DELIMITOR) . Regexp::DELIMITOR
+                ));
+            case Router::TYPE_MATCHER_STARTWITH:
+                return new StartWith(array(
+                    'prefix' => $data
+                ));
+        }
+        return null;
     }
 }

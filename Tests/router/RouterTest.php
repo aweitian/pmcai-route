@@ -49,7 +49,39 @@ namespace {
 
 
         }
+        public function testAny()
+        {
+            $defined = array(
+                function ($request, $next) {
+                    $request->carry['df-mw-1'] = 'ok';
+                    return $next($request);
+                },
+                function ($request, $next) {
+                    $request->carry['df-mw-2'] = 'ok';
+                    return $next($request);
+                }
+            );
+            $g = array(
+                function ($request, $next) {
+                    $request->carry['g-mw-2'] = 'ok';
+                    return $next($request);
+                }
+            );
+            $request = new Request('/');
+            $router = new Router($request, $defined, $g);
+            $router->any('/', function () {
+                return 'balabala';
+            });
+            $router->any("/post", function () {
+                return "POST";
+            });
+            $this->assertEquals("balabala", $router->run()->getContent());
+            $request->setMethod('POST');
+            $this->assertEquals("balabala", $router->run()->getContent());
+            $this->assertEquals($request->carry['g-mw-2'], 'ok');
 
+
+        }
         public function testActDef()
         {
             $defined = array(
