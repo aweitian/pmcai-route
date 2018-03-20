@@ -28,10 +28,10 @@ class MatcherFactory
         $matcher = new AndCondition();
         if ($method !== "*") {
             $matcher->add(new Method($method));
-            $type_matcher = self::CreateType($type, $data);
-            if ($type_matcher != null) {
-                $matcher->add($type_matcher);
-            }
+        }
+        $type_matcher = self::CreateType($type, $data);
+        if ($type_matcher != null) {
+            $matcher->add($type_matcher);
         }
         return $matcher;
     }
