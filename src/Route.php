@@ -19,6 +19,7 @@ use Aw\Pipeline;
 use Aw\Routing\Dispatch\IDispatcher;
 use Aw\Routing\Matcher\IMatcher;
 use Aw\Routing\Router\Middleware;
+use Aw\Routing\Router\Router;
 
 
 class Route
@@ -47,6 +48,12 @@ class Route
     public $logs = array();
     public $useGlobalMiddleware = true;
 
+    /**
+     * @var Router
+     */
+    protected $router = null;
+    protected $name;
+
     public function __construct(IMatcher $matcher = null, Middleware $middleware = null, $private_middleware = array(), $action = null, $useGlobalMiddleware = true)
     {
         $this->useGlobalMiddleware = $useGlobalMiddleware;
@@ -56,6 +63,38 @@ class Route
         $this->middleware = $middleware;
     }
 
+    /**
+     * @param Router $router
+     * @return $this
+     */
+    public function setRouter(Router $router)
+    {
+        $this->router = $router;
+        return $this;
+    }
+
+    /**
+     * 此函数   不会   改变路由表顺序
+     * @param $name
+     * @param bool $from
+     */
+    public function setName($name, $from = null)
+    {
+        if (!is_null($this->router)) {
+            if (!($from instanceof Router)) {
+                $this->router->onRouteNameChange($this, $name);
+            }
+        }
+        $this->name = $name;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getName()
+    {
+        return $this->name;
+    }
 
     /**
      * @param Request $request

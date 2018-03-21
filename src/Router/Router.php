@@ -73,15 +73,37 @@ class Router
     }
 
     /**
-     * @param $pattern
-     * @param $action
-     * @param array $middleware
-     * @param int $type
-     * @return Route
+     * @param Route $route
+     * @param $new_name
      */
-    public function get($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL)
+    public function onRouteNameChange(Route $route, $new_name)
     {
-        return $this->request('GET', $pattern, $action, $middleware, $type);
+        $old_name = $route->getName();
+        if (!isset($this->routes[$old_name])) {
+            return;
+        }
+        $nr = array();
+        foreach ($this->routes as $k => $r) {
+            if ($r->getName() !== $old_name) {
+                $nr[$k] = $r;
+            } else {
+                $nr[$new_name] = $r;
+            }
+        }
+        $this->routes = $nr;
+    }
+
+    /**
+     * 设置路由表项中的名字
+     * @param $old_name
+     * @param $new_name
+     */
+    public function setName($old_name, $new_name)
+    {
+        if (!isset($this->routes[$old_name])) {
+            return;
+        }
+        $this->onRouteNameChange($this->routes[$old_name], $new_name);
     }
 
     /**
@@ -89,11 +111,12 @@ class Router
      * @param $action
      * @param array $middleware
      * @param int $type
+     * @param null $name
      * @return Route
      */
-    public function post($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL)
+    public function get($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $name = null)
     {
-        return $this->request('POST', $pattern, $action, $middleware, $type);
+        return $this->request('GET', $pattern, $action, $middleware, $type, $name);
     }
 
     /**
@@ -101,11 +124,12 @@ class Router
      * @param $action
      * @param array $middleware
      * @param int $type
+     * @param null $name
      * @return Route
      */
-    public function put($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL)
+    public function post($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $name = null)
     {
-        return $this->request('PUT', $pattern, $action, $middleware, $type);
+        return $this->request('POST', $pattern, $action, $middleware, $type, $name);
     }
 
     /**
@@ -113,11 +137,12 @@ class Router
      * @param $action
      * @param array $middleware
      * @param int $type
+     * @param null $name
      * @return Route
      */
-    public function delete($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL)
+    public function put($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $name = null)
     {
-        return $this->request('delete', $pattern, $action, $middleware, $type);
+        return $this->request('PUT', $pattern, $action, $middleware, $type, $name);
     }
 
     /**
@@ -125,11 +150,25 @@ class Router
      * @param $action
      * @param array $middleware
      * @param int $type
+     * @param null $name
      * @return Route
      */
-    public function any($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL)
+    public function delete($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $name = null)
     {
-        return $this->request('*', $pattern, $action, $middleware, $type);
+        return $this->request('delete', $pattern, $action, $middleware, $type, $name);
+    }
+
+    /**
+     * @param $pattern
+     * @param $action
+     * @param array $middleware
+     * @param int $type
+     * @param null $name
+     * @return Route
+     */
+    public function any($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $name = null)
+    {
+        return $this->request('*', $pattern, $action, $middleware, $type, $name);
     }
 
     /**
@@ -138,9 +177,10 @@ class Router
      * @param array $dispatch_param namespace|namespace_map|ctl_tpl|act_tpl
      * @param array $matcher_param prefix|mask|moduleSkip|type|module|check_dispatch
      * @param bool $useGlobalMiddleware
+     * @param string $name
      * @return Route
      */
-    public function pmcai($prefix = "/", $middleware = array(), $dispatch_param = array(), $matcher_param = array(), $useGlobalMiddleware = true)
+    public function pmcai($prefix = "/", $middleware = array(), $dispatch_param = array(), $matcher_param = array(), $useGlobalMiddleware = true, $name = null)
     {
         $me = $this;
         $matcher_param["prefix"] = $prefix;
@@ -173,7 +213,7 @@ class Router
         }
         //Route的ACTION参数传递数据类型过去,会被识别为pmcai Dispatcher
         $route = new Route($matcher, $this->middleware, $middleware, $dispatch_param, $useGlobalMiddleware);
-        return $this->add($route);
+        return $this->add($route, $name);
     }
 
     /**
@@ -181,13 +221,14 @@ class Router
      * @param IDispatcher $dispatcher
      * @param array $middleware
      * @param bool $useGlobalMiddleware
+     * @param null $name
      * @return Route
      */
-    public function connect(IMatcher $matcher, IDispatcher $dispatcher, $middleware = array(), $useGlobalMiddleware = true)
+    public function connect(IMatcher $matcher, IDispatcher $dispatcher, $middleware = array(), $useGlobalMiddleware = true, $name = null)
     {
         $route = new Route($matcher, $this->middleware, $middleware, null, $useGlobalMiddleware);
         $route->setDispatcher($dispatcher);
-        return $this->add($route);
+        return $this->add($route, $name);
     }
 
     /**
@@ -197,13 +238,14 @@ class Router
      * @param $middleware
      * @param int $type TYPE_MATCHER_EQUAL|TYPE_MATCHER_REGEXP|TYPE_MATCHER_STARTWITH
      * @param bool $use_global_mw
+     * @param null $name
      * @return Route
      */
-    protected function request($method, $pattern, $action, $middleware, $type, $use_global_mw = true)
+    protected function request($method, $pattern, $action, $middleware, $type, $use_global_mw = true, $name = null)
     {
         $matcher = MatcherFactory::CreateByMethodAndType($method, $type, $pattern);
 
-        return $this->add(new Route($matcher, $this->middleware, $middleware, $action, $use_global_mw));
+        return $this->add(new Route($matcher, $this->middleware, $middleware, $action, $use_global_mw), $name);
     }
 
     /**
