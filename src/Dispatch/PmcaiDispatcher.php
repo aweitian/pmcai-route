@@ -73,12 +73,19 @@ class PmcaiDispatcher implements IDispatcher
                     return new Response("Method $method not found", 500);
                 }
                 $method_ins = $rc->getMethod($method);
-                $ret = $method_ins->invoke($rc->newInstance(), $request);
-                if ($ret instanceof Response) {
-                    return $ret;
+                if($method_ins->isPublic())
+                {
+                    $ret = $method_ins->invoke($rc->newInstance(), $request);
+                    if ($ret instanceof Response) {
+                        return $ret;
+                    } else {
+                        return new Response($ret);
+                    }
                 } else {
-                    return new Response($ret);
+                    $this->logs[] = "Method $method is not public";
+                    return new Response("Method $method is not public", 500);
                 }
+
             } else {
                 $this->logs[] = "request is not via pmcai parser";
             }
