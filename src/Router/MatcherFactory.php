@@ -30,6 +30,9 @@ class MatcherFactory
             $matcher->add(new Method($method));
         }
         $type_matcher = self::CreateType($type, $data);
+        if ($matcher->isEmpty()) {
+            return $type_matcher;
+        }
         if ($type_matcher != null) {
             $matcher->add($type_matcher);
         }
@@ -45,7 +48,7 @@ class MatcherFactory
                 ));
             case Router::TYPE_MATCHER_REGEXP:
                 return new Regexp(array(
-                    'regexp' => Regexp::DELIMITOR . preg_quote($data, Regexp::DELIMITOR) . Regexp::DELIMITOR
+                    'regexp' => Regexp::DELIMITOR . $data . Regexp::DELIMITOR
                 ));
             case Router::TYPE_MATCHER_STARTWITH:
                 return new StartWith(array(

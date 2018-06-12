@@ -111,12 +111,13 @@ class Router
      * @param $action
      * @param array $middleware
      * @param int $type
+     * @param bool $use_global_mw
      * @param null $name
      * @return Route
      */
-    public function get($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $name = null)
+    public function get($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $use_global_mw = true, $name = null)
     {
-        return $this->request('GET', $pattern, $action, $middleware, $type, $name);
+        return $this->request('GET', $pattern, $action, $middleware, $type, $use_global_mw, $name);
     }
 
     /**
@@ -124,12 +125,13 @@ class Router
      * @param $action
      * @param array $middleware
      * @param int $type
+     * @param bool $use_global_mw
      * @param null $name
      * @return Route
      */
-    public function post($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $name = null)
+    public function post($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $use_global_mw = true, $name = null)
     {
-        return $this->request('POST', $pattern, $action, $middleware, $type, $name);
+        return $this->request('POST', $pattern, $action, $middleware, $type, $use_global_mw, $name);
     }
 
     /**
@@ -137,12 +139,13 @@ class Router
      * @param $action
      * @param array $middleware
      * @param int $type
+     * @param bool $use_global_mw
      * @param null $name
      * @return Route
      */
-    public function put($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $name = null)
+    public function put($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $use_global_mw = true, $name = null)
     {
-        return $this->request('PUT', $pattern, $action, $middleware, $type, $name);
+        return $this->request('PUT', $pattern, $action, $middleware, $type, $use_global_mw, $name);
     }
 
     /**
@@ -150,12 +153,13 @@ class Router
      * @param $action
      * @param array $middleware
      * @param int $type
+     * @param bool $use_global_mw
      * @param null $name
      * @return Route
      */
-    public function delete($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $name = null)
+    public function delete($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $use_global_mw = true, $name = null)
     {
-        return $this->request('delete', $pattern, $action, $middleware, $type, $name);
+        return $this->request('delete', $pattern, $action, $middleware, $type, $use_global_mw, $name);
     }
 
     /**
@@ -163,12 +167,13 @@ class Router
      * @param $action
      * @param array $middleware
      * @param int $type
+     * @param bool $use_global_mw
      * @param null $name
      * @return Route
      */
-    public function any($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $name = null)
+    public function any($pattern, $action, $middleware = array(), $type = self::TYPE_MATCHER_EQUAL, $use_global_mw = true, $name = null)
     {
-        return $this->request('*', $pattern, $action, $middleware, $type, $name);
+        return $this->request('*', $pattern, $action, $middleware, $type, $use_global_mw, $name);
     }
 
     /**
@@ -244,7 +249,6 @@ class Router
     protected function request($method, $pattern, $action, $middleware, $type, $use_global_mw = true, $name = null)
     {
         $matcher = MatcherFactory::CreateByMethodAndType($method, $type, $pattern);
-
         return $this->add(new Route($matcher, $this->middleware, $middleware, $action, $use_global_mw), $name);
     }
 

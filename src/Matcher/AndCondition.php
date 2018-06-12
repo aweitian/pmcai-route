@@ -36,4 +36,9 @@ class AndCondition implements IMatcher
         }
         return true;
     }
+
+    public function isEmpty()
+    {
+        return empty($this->matchers);
+    }
 }
