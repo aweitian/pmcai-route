@@ -18,6 +18,20 @@ namespace {
 
     class RouterTest extends \PHPUnit_Framework_TestCase
     {
+        public function testStartWith()
+        {
+            $request = new Request('/p/a/bt');
+            $router = new Router($request, array(), array());
+            $router->get('/p', function () {
+                return 'balabala';
+            }, array(), Router::TYPE_MATCHER_STARTWITH);
+            $router->post("/post", function () {
+                return "POST";
+            });
+            $this->assertEquals("balabala", $router->run()->getContent());
+            $this->assertEquals($request->carry['matcher'], 'a/bt');
+        }
+
         public function testGet()
         {
             $defined = array(
@@ -49,6 +63,7 @@ namespace {
 
 
         }
+
         public function testAny()
         {
             $defined = array(
@@ -82,6 +97,7 @@ namespace {
 
 
         }
+
         public function testActDef()
         {
             $defined = array(
@@ -274,7 +290,7 @@ namespace {
             ));
             $this->assertEquals("ggfgg", $router->run()->getContent());
             $this->assertEquals($request->carry['g-mw-2'], 'ok');
-            $this->assertEquals(g::$c,1);
+            $this->assertEquals(g::$c, 1);
         }
 
         public function testMW()
@@ -311,7 +327,7 @@ namespace {
             ));
             $this->assertEquals("kk", $router->run()->getContent());
             $this->assertEquals($request->carry['g-mw-2'], 'ok');
-            $this->assertEquals(g::$c,2);
+            $this->assertEquals(g::$c, 2);
         }
 
         public function testMWBlock()
@@ -330,7 +346,7 @@ namespace {
                 function ($request, $next) {
                     //$next($request);
                     $request->carry['g-mw-2'] = 'ok';
-                    return new Response("blocked",500);
+                    return new Response("blocked", 500);
                 }
             );
             $request = new Request('/g/f', 'POST');
@@ -351,7 +367,7 @@ namespace {
             $this->assertEquals(500, $response->getStatusCode());
             $this->assertEquals($request->carry['g-mw-2'], 'ok');
             //ACTION没有执行,所以这个值还是2
-            $this->assertEquals(g::$c,2);
+            $this->assertEquals(g::$c, 2);
         }
 
         public function testPmcaiCheckDispatchFalse()
@@ -385,8 +401,7 @@ namespace {
                 'namespace' => '\\gfg\\lol\\',
                 'ctl_tpl' => '{}',
                 'act_tpl' => '{}'
-            ),array(
-                //"check_dispatch" => true
+            ), array(//"check_dispatch" => true
             ));
 
             //这个路由不会执行到
@@ -394,13 +409,12 @@ namespace {
                 'namespace' => '\\g\\gfgg\\',
                 'ctl_tpl' => '{}',
                 'act_tpl' => '{}'
-            ),array(
-                //"check_dispatch" => true
+            ), array(//"check_dispatch" => true
             ));
 
             $router->run();
             //ACTION没有执行,因为没有路由成功,所以这个值还是2
-            $this->assertEquals(g::$c,2);
+            $this->assertEquals(g::$c, 2);
         }
 
         public function testPmcaiCheckDispatchTrue()
@@ -434,19 +448,33 @@ namespace {
                 'namespace' => '\\gfg\\lol\\',
                 'ctl_tpl' => '{}',
                 'act_tpl' => '{}'
-            ),array(
+            ), array(
                 "check_dispatch" => true
             ));
             $router->pmcai('/', array(), array(
                 'namespace' => '\\g\\gfgg\\',
                 'ctl_tpl' => '{}',
                 'act_tpl' => '{}'
-            ),array(
+            ), array(
                 "check_dispatch" => true
             ));
 
             $router->run();
-            $this->assertEquals(g::$c,3);
+            $this->assertEquals(g::$c, 3);
+        }
+
+        public function testRegexp()
+        {
+            $defined = array();
+            $g = array();
+            $request = new Request('/svc/f/ai');
+            $router = new Router($request, $defined, $g);
+            $router->get('^/svc/(\w+)/(\w+)$', function () {
+                return 'balabala';
+            }, array(), Router::TYPE_MATCHER_REGEXP, true, 'regexp');
+
+            $router->run();
+            $this->assertEquals(array("/svc/f/ai", "f", "ai"), $request->carry['matcher']);
         }
     }
 }
@@ -474,11 +502,12 @@ namespace App\Controller {
         }
     }
 }
-namespace g\gfgg
-{
+
+namespace g\gfgg {
     class g
     {
         public static $c = 0;
+
         public function f()
         {
             self::$c++;

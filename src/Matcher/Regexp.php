@@ -38,7 +38,10 @@ class Regexp implements IMatcher
         }
         if (substr($this->regexp, 0, 1) === self::DELIMITOR && substr($this->regexp, -1, 1) === self::DELIMITOR) {
             $url = $request->getPath();
-            return !!preg_match($this->regexp, $url, $this->matches);
+            if (preg_match($this->regexp, $url, $this->matches)) {
+                $request->carry['matcher'] = $this->matches;
+                return true;
+            }
         }
         return false;
     }
