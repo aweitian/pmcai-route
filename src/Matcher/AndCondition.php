@@ -37,8 +37,22 @@ class AndCondition implements IMatcher
         return true;
     }
 
+    /**
+     * @return bool
+     */
     public function isEmpty()
     {
         return empty($this->matchers);
+    }
+
+    /**
+     * @param $index
+     * @return IMatcher
+     */
+    public function get($index)
+    {
+        if (isset($this->matchers[$index]))
+            return $this->matchers[$index];
+        return null;
     }
 }
