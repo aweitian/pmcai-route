@@ -300,9 +300,13 @@ class Router
         if (is_string($name)) {
             unset($this->routes[$name]);
             $this->routes[$name] = $route;
+            $n = $name;
         } else {
+            $n = count($this->routes);
             $this->routes[] = $route;
         }
+        $route->setName($n);
+        $route->setRouter($this);
         return $route;
     }
 
