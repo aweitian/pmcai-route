@@ -132,12 +132,37 @@ class Route
             $mw = array();
         }
         $dp = $this->dispatcher;
+        $router = $this->router;
+        $route = $this;
         $pipe = new Pipeline();
-        return $pipe->send($this->request)
+        $c = $this->router->getCallbackBeforeThroughPreMiddleware();
+        if (is_callable($c)) {
+            $c($this->request, $this, $router);
+        }
+        $response = $pipe->send($this->request)
             ->through($mw)
-            ->then(function ($request) use ($dp) {
-                return $dp->dispatch($request);
+            ->then(function ($request) use ($dp, $router, $route) {
+                $c = $router->getCallbackAfterThroughPreMiddleware();
+                if (is_callable($c)) {
+                    $c($request, $route, $router);
+                }
+
+                $c = $router->getCallbackBeforeInvokeAction();
+                if (is_callable($c)) {
+                    $c($request, $route, $router);
+                }
+                $response = $dp->dispatch($request);
+                $c = $router->getCallbackAfterInvokeAction();
+                if (is_callable($c)) {
+                    $c($response, $request, $route, $router);
+                }
+                return $response;
             });
+        $c = $router->getCallbackAfterThroughPostMiddleware();
+        if (is_callable($c)) {
+            $c($response, $this->request, $route, $router);
+        }
+        return $response;
     }
 
     /**
