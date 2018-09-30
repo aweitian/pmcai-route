@@ -69,9 +69,15 @@ namespace {
                 $static++;
             });
 
+            $router->setCallbackBeforeThroughPostMiddleware(function (Response $response) use ($that, &$static) {
+                $response->setContent('revised');
+                $that->assertEquals($static, 5);
+                $static++;
+            });
+
             $router->setCallbackAfterThroughPostMiddleware(function (Response $response) use ($that, &$static) {
                 $that->assertEquals("revised", $response->getContent());
-                $that->assertEquals($static, 5);
+                $that->assertEquals($static, 6);
                 $static++;
             });
             $this->assertEquals("revised", $router->run()->getContent());

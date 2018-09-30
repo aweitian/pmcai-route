@@ -156,6 +156,10 @@ class Route
                 if (is_callable($c)) {
                     $c($response, $request, $route, $router);
                 }
+                $c = $router->getCallbackBeforeThroughPostMiddleware();
+                if (is_callable($c)) {
+                    $c($response, $request, $route, $router);
+                }
                 return $response;
             });
         $c = $router->getCallbackAfterThroughPostMiddleware();
