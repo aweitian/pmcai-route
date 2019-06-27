@@ -96,8 +96,8 @@ namespace {
 
             $router->setCallbackResponse500(function (Response $response, Exception $exception) use ($that) {
                 //print $exception->getTraceAsString();
-                $that->assertEquals("Division by zero", $response->getContent());
-                $that->assertEquals("Division by zero", $exception->getMessage());
+                $that->assertEquals("Division by zero", substr($response->getContent(), 0, 16));
+                $that->assertEquals("Division by zero", substr($exception->getMessage(), 0, 16));
             });
             $router->run()->getContent();
         }

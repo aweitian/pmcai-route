@@ -458,7 +458,7 @@ class Router
                     return new Response($response);
                 } catch (\Exception $e) {
                     $c = $this->getCallbackResponse500();
-                    $r = new Response($e->getMessage(), 500);
+                    $r = new Response($e->getMessage() . $e->getTraceAsString(), 500);
                     if (is_callable($c)) {
                         $c($r, $e, $route, $this->request, $this);
                     }
