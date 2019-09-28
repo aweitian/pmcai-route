@@ -1,61 +1,32 @@
-# 常用路由匹配
+# 路由第三版
 ## 安装组件
 使用 composer 命令进行安装或下载源代码使用。
->composer require aweitian/route
+> composer require aweitian/route
 >
-## 三个中间件变量的作用
-* middlewareGroups  用于索引,取定义作用
-* middleware 用于索引,取定义作用
-* middlewarePriority 全局路由生效 
 
-> 单独使用passMiddlewarePriority使middlewarePriority对本路由不生效
+### 匹配URL路径 match
+- ca 返回 array(control,action)
+- mca 返回 array(module,control,action)
+- regexp 返回 matches
+- equal 返回 array()
+- startWith array(endsWith)
 
-> App("router.matched.action")来获取$router->get第二个参数
+### 映射 map 
+> 如果长度大于等于3 存在 0 作为 {m} ,1 作为 {c},2作为{a}
+> 如果长度小于3 , 存在0 作为 {c} ,存在1 作为 {a}
+- map($result,$class_pattern='{c}',$action_pattern='{a}',$namespace_pattern='App\Modules\{m}',$c_default='main',$a_default='index',$m_default='Controller')
 
-> App("router.matched.route")来获取匹配的route
-$router->get('/{bar}/{lol}',function(){});
-
-## 示例
-<pre>
-$router = new RouteCollection();
-$router->setMiddleware([
-    'test' => function(Request $request,$next) {
-        $request->attributes->add([
-            'test' => 'test - Middleware'
-        ]);
-        return $next($request);
-    }
-]);
-
-$router->setMiddlewareGroups([
-    'testGrp' => [
-        function(Request $request,$next) {
-            $request->attributes->add([
-                'testGrp1' => 'testGrp1 - Middleware'
-            ]);
-            return $next($request);
-        },
-        function(Request $request,$next) {
-            $request->attributes->add([
-                'testGrp2' => 'testGrp2 - Middleware'
-            ]);
-            return $next($request);
-        }
-    ]
-]);
-//第二个参数数组说明
-//第一个元素为callback
-$router->get('/{bar}/{lol}',["\\Tian\\Route\\Tests\\Matcher\\classParameter@middleware",
-    "middleware" => [
-        function (Request $request,$next) {
-            $request->attributes->add([
-                'aa' => 'bb'
-            ]);
-            return $next($request);
-        },
-        "test",
-        "testGrp"
-    ]
-]);
-$response = $router->dispatch(Request::create("/abar/blol"));
-</pre>
+### 派遣 dispatch
+- 函数
+- 方法
+    - namespace
+    - class
+    - method
+### 路由器
+- 路由到函数,直接把数据作为参数(一个参数)调用函数
+- 路由到方法
+    - route($result) 
+    - 
+    
+        
+    

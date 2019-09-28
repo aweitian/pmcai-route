@@ -26,6 +26,6 @@ class Method implements IMatcher
      */
     public function match(Request $request)
     {
-        return $request->getMethod() == $this->method;
+        return $request->getMethod() === $this->method;
     }
 }

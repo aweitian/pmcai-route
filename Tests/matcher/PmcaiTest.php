@@ -14,7 +14,7 @@ class PmcaiTest extends \PHPUnit_Framework_TestCase
 {
     public function testMapca()
     {
-        $matcher = new \Aw\Routing\Matcher\Mapca(array(
+        $matcher = new \Aw\Routing\Matcher\Ca(array(
             'prefix' => "/pre",
             'mask' => "ca",
             'type' => 'pmcai',
@@ -27,7 +27,7 @@ class PmcaiTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($matcher->match(new \Aw\Http\Request("/ggfgg/abc/ccc")));
 
 
-        $matcher = new \Aw\Routing\Matcher\Mapca(array(
+        $matcher = new \Aw\Routing\Matcher\Ca(array(
             'prefix' => "/pre",
             'mask' => "mca",
             'type' => 'pmcai',

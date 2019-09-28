@@ -16,16 +16,12 @@ class Callback implements IMatcher
     protected $callback;
 
     /**
-     * @param array $data
+     * Callback constructor.
+     * @param callable $callback
      */
-    public function __construct($data = array())
+    public function __construct(Callback $callback)
     {
-        $attrs = 'callback';
-        foreach (explode('|', $attrs) as $attr) {
-            if (array_key_exists($attr, $data)) {
-                $this->{$attr} = $data[$attr];
-            }
-        }
+        $this->callback = $callback;
     }
 
 

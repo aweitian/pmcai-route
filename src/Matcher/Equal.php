@@ -15,14 +15,14 @@ class Equal implements IMatcher
 {
     protected $url;
 
-    public function __construct(array $data = array())
+    /**
+     * /ab/c  == /ab/c/
+     * Equal constructor.
+     * @param $url
+     */
+    public function __construct($url)
     {
-        $attrs = 'url';
-        foreach (explode('|', $attrs) as $attr) {
-            if (array_key_exists($attr, $data)) {
-                $this->{$attr} = $data[$attr];
-            }
-        }
+        $this->url = $url;
     }
 
     /**

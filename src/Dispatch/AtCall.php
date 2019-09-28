@@ -17,7 +17,7 @@ class AtCall implements IDispatcher
     const DEFAULT_ACTION = "index";
     protected $callback;
     protected $namespace;
-    public $logs = array();
+    protected $response;
 
     /**
      * @param mixed $call
@@ -32,7 +32,7 @@ class AtCall implements IDispatcher
 
     /**
      * @param Request $request
-     * @return Response
+     * @return bool
      * @throws \Exception
      */
     public function dispatch(Request $request)
@@ -45,17 +45,25 @@ class AtCall implements IDispatcher
             $cls = $this->handleNamespace($this->callback);
             $act = self::DEFAULT_ACTION;
         }
-        if (!class_exists($cls)) {
-            $this->logs[] = "class $cls does not exists";
-            return new Response("class $cls does not exists", 500);
+
+        $rc = new \ReflectionClass($cls);
+        if (!$rc->hasMethod($act)) {
+            $this->response = new Response("{$act} in {$cls} is not found", 404);
+            return false;
         }
-        $cls_ins = new $cls();
-        $ret = $cls_ins->$act($request);
+        $method = $rc->getMethod($cls);
+        if (!$method->isPublic()) {
+            $this->response = new Response("{$act} in {$cls} should be public", 403);
+            return false;
+        }
+        $inst = $rc->newInstance($request);
+        $ret = $method->invoke($inst);
         if ($ret instanceof Response) {
-            return $ret;
+            $this->response = $ret;
         } else {
-            return new Response($ret);
+            $this->response = new Response($ret);
         }
+        return true;
     }
 
     protected function handleNamespace($cls)
@@ -65,5 +73,13 @@ class AtCall implements IDispatcher
         } else {
             return $this->namespace . $cls;
         }
+    }
+
+    /**
+     * @return Response
+     */
+    public function getResponse()
+    {
+        return $this->response;
     }
 }

@@ -6,22 +6,22 @@
  * Time: 12:43
  */
 
-namespace Aw\Routing\Dispatch;
-
+namespace Aw\Routing\Route;
 
 use Aw\Http\Request;
 use Aw\Http\Response;
 
-interface IDispatcher
+interface IRoute
 {
     /**
      * @param Request $request
+     * @param array $middleware
      * @return bool
      */
-    public function dispatch(Request $request);
+    public function route(Request $request,array $middleware);
 
     /**
      * @return Response
      */
-    public function getResponse();
+    public function getDispatchResult();
 }

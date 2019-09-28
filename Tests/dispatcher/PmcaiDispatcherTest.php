@@ -15,7 +15,7 @@ namespace
     use Aw\Http\Request;
     use Aw\Routing\Dispatch\Callback;
     use Aw\Routing\Dispatch\PmcaiDispatcher;
-    use Aw\Routing\Matcher\Mapca;
+    use Aw\Routing\Matcher\Ca;
 
     class PmcaiDispatcherTest extends \PHPUnit_Framework_TestCase
     {
@@ -27,7 +27,7 @@ namespace
                 )
             ));
             $request = new Request('/');
-            $matcher = new Mapca();
+            $matcher = new Ca();
             $matcher->match($request);
             $this->assertEquals("main-index",$dispatcher->dispatch($request)->getContent());
         }
@@ -40,7 +40,7 @@ namespace
                 )
             ));
             $request = new Request('/ctl');
-            $matcher = new Mapca();
+            $matcher = new Ca();
             $matcher->match($request);
             $this->assertEquals("ctl-index",$dispatcher->dispatch($request)->getContent());
         }
@@ -53,7 +53,7 @@ namespace
                 )
             ));
             $request = new Request('/ctl/act');
-            $matcher = new Mapca();
+            $matcher = new Ca();
             $matcher->match($request);
             $this->assertEquals("ctl-act-index",$dispatcher->dispatch($request)->getContent());
         }

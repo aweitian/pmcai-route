@@ -15,7 +15,8 @@ use Aw\Http\Response;
 class Callback implements IDispatcher
 {
     protected $callback;
-    public $logs = array();
+    protected $response;
+
     /**
      * @param mixed $call
      */
@@ -25,21 +26,28 @@ class Callback implements IDispatcher
     }
 
 
-    /**
-     * @param Request $request
-     * @return Response
-     * @throws \Exception
-     */
     public function dispatch(Request $request)
     {
         $callback = $this->callback;
-        if (!is_callable($callback))
-            throw new \Exception('callback is not callable');
-        $ret = $callback($request);
-        if ($ret instanceof Response) {
-            return $ret;
-        } else {
-            return new Response($ret);
+        if (!is_callable($callback)) {
+            return false;
         }
+        $ret = $callback($request);
+        if ($ret === false)
+            return false;
+        if ($ret instanceof Response) {
+            $this->response = $ret;
+        } else {
+            $this->response = new Response($ret);
+        }
+        return true;
+    }
+
+    /**
+     * @return Response
+     */
+    public function getResponse()
+    {
+        return $this->response;
     }
 }
