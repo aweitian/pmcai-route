@@ -10,33 +10,39 @@
  */
 
 
+use Aw\Http\Request;
+
 class StartWithTest extends \PHPUnit_Framework_TestCase
 {
 
-    public function testStartwith()
+    public function testMatch()
     {
-        $matcher = new \Aw\Routing\Matcher\StartWith(array(
-            'prefix' => "/ggfgg/abc"
-        ));
-        $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc")));
-        $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc/")));
-        $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc/abc")));
-        $this->assertFalse($matcher->match(new \Aw\Http\Request("/ggfgg/abccc")));
-        $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc/cc")));
-        $this->assertFalse($matcher->match(new \Aw\Http\Request("/abc/abc/ccc")));
-        $matcher = new \Aw\Routing\Matcher\StartWith(array(
-            'prefix' => "/ggfgg/abc/"
-        ));
-        $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc")));
-        $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc/")));
-        $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc/abc")));
-        $this->assertEquals("abc", $matcher->getPath());
-        $this->assertFalse($matcher->match(new \Aw\Http\Request("/ggfgg/abccc")));
-        $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc/cc")));
-        $this->assertEquals("cc", $matcher->getPath());
-        $this->assertFalse($matcher->match(new \Aw\Http\Request("/abc/abc/ccc")));
-        $this->assertTrue($matcher->match(new \Aw\Http\Request("/ggfgg/abc/cc/ff")));
-        $this->assertEquals("cc/ff", $matcher->getPath());
+        $matcher = new \Aw\Routing\Matcher\StartWith('/');
+        $this->assertTrue($matcher->match(new Request("/")));
+        $this->assertTrue($matcher->match(new Request("")));
+        $this->assertTrue($matcher->match(new Request("/a")));
+        $this->assertTrue($matcher->match(new Request("/aa/")));
+        $this->assertTrue($matcher->match(new Request("/aa/bb")));
+        //false
+        $this->assertFalse($matcher->match(new Request("a")));
+
+
+
+        $matcher = new \Aw\Routing\Matcher\StartWith('/a');
+        $this->assertTrue($matcher->match(new Request("/a")));
+        $this->assertTrue($matcher->match(new Request("/a/")));
+        $this->assertTrue($matcher->match(new Request("/a/bb")));
+        $this->assertTrue($matcher->match(new Request("/a/bb/c/d")));
+        //false
+        $this->assertFalse($matcher->match(new Request("/")));
+        $this->assertFalse($matcher->match(new Request("")));
+        $this->assertFalse($matcher->match(new Request("a")));
+        $this->assertFalse($matcher->match(new Request("/aa/")));
+        $this->assertFalse($matcher->match(new Request("/aa/bb")));
+        $this->assertFalse($matcher->match(new Request("/aa//")));
+        $this->assertFalse($matcher->match(new Request("//aa/")));
+        $this->assertFalse($matcher->match(new Request("//aa")));
+
     }
 
 }

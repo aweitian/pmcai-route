@@ -10,6 +10,7 @@ namespace Aw\Routing\Matcher;
 
 
 use Aw\Http\Request;
+use Closure;
 
 class Callback implements IMatcher
 {
@@ -17,9 +18,9 @@ class Callback implements IMatcher
 
     /**
      * Callback constructor.
-     * @param callable $callback
+     * @param callable|Closure $callback
      */
-    public function __construct(Callback $callback)
+    public function __construct(Closure $callback)
     {
         $this->callback = $callback;
     }

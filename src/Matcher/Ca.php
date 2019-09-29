@@ -20,7 +20,7 @@ class Ca implements IMatcher
 
 
     /**
-     * 路径必须匹配\w+
+     * 路径必须匹配\w+ 或者 - 组成
      * @param Request $request
      * @return bool
      */
@@ -34,7 +34,7 @@ class Ca implements IMatcher
         } else {
             $this->result = explode("/", trim($url, "/"));
             foreach ($this->result as $item) {
-                if (!preg_match("/^\w+$/", $item)) {
+                if (!preg_match("/^[\w-]+$/", $item)) {
                     return false;
                 }
             }

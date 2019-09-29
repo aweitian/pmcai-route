@@ -32,7 +32,7 @@ class Mca implements IMatcher
         } else {
             $this->result = explode("/", trim($url, "/"));
             foreach ($this->result as $item) {
-                if (!preg_match("/^\w+$/", $item)) {
+                if (!preg_match("/^[\w-]+$/", $item)) {
                     return false;
                 }
             }

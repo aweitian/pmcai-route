@@ -10,17 +10,46 @@
  */
 
 
+use Aw\Http\Request;
+
 class EqualTest extends \PHPUnit_Framework_TestCase
 {
-    public function testEqual()
-    {
-        $matcher = new \Aw\Routing\Matcher\Equal(array(
-            'url' => "/test"
-        ));
-        $this->assertTrue($matcher->match(new \Aw\Http\Request("/test")));
-        $this->assertTrue($matcher->match(new \Aw\Http\Request("/test/")));
-        $this->assertFalse($matcher->match(new \Aw\Http\Request("/test/c")));
-        $this->assertFalse($matcher->match(new \Aw\Http\Request("/abc")));
 
+    public function testMatch()
+    {
+        $matcher = new \Aw\Routing\Matcher\Equal('/');
+        $this->assertTrue($matcher->match(new Request("/")));
+        $this->assertTrue($matcher->match(new Request("")));
+        //false
+        $this->assertFalse($matcher->match(new Request("a")));
+        $this->assertFalse($matcher->match(new Request("/a")));
+        $this->assertFalse($matcher->match(new Request("/aa/")));
+        $this->assertFalse($matcher->match(new Request("/aa/bb")));
+
+
+        $matcher = new \Aw\Routing\Matcher\Equal('/a');
+        $this->assertTrue($matcher->match(new Request("/a")));
+        $this->assertTrue($matcher->match(new Request("/a/")));
+        //false
+        $this->assertFalse($matcher->match(new Request("/")));
+        $this->assertFalse($matcher->match(new Request("")));
+        $this->assertFalse($matcher->match(new Request("a")));
+        $this->assertFalse($matcher->match(new Request("/aa/")));
+        $this->assertFalse($matcher->match(new Request("/aa/bb")));
+        $this->assertFalse($matcher->match(new Request("/aa//")));
+        $this->assertFalse($matcher->match(new Request("//aa/")));
+        $this->assertFalse($matcher->match(new Request("//aa")));
+
+
+        $matcher = new \Aw\Routing\Matcher\Equal('/aa/bb');
+        $this->assertTrue($matcher->match(new Request("/aa/bb")));
+        $this->assertTrue($matcher->match(new Request("/aa/bb/")));
+        //false
+        $this->assertFalse($matcher->match(new Request("/")));
+        $this->assertFalse($matcher->match(new Request("")));
+        $this->assertFalse($matcher->match(new Request("a")));
+        $this->assertFalse($matcher->match(new Request("/aa/")));
+        $this->assertFalse($matcher->match(new Request("/aa//bb")));
     }
+
 }
