@@ -18,6 +18,10 @@ class RegexpTest extends \PHPUnit_Framework_TestCase
     public function testMatch()
     {
         $matcher = new \Aw\Routing\Matcher\Regexp('#^/(\w+)(/(\w+)\.html)?$#');
+
+        $this->assertTrue($matcher->setMask('15'));
+        $this->assertTrue($matcher->setMask('214'));
+
         $this->assertTrue($matcher->match(new Request("/abc")));
         $this->assertEquals(array("/abc", "abc"), $matcher->result);
         $this->assertTrue($matcher->match(new Request("/0ab/0.html")));

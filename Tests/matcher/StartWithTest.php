@@ -26,8 +26,6 @@ class StartWithTest extends \PHPUnit_Framework_TestCase
         //false
         $this->assertFalse($matcher->match(new Request("a")));
 
-
-
         $matcher = new \Aw\Routing\Matcher\StartWith('/a');
         $this->assertTrue($matcher->match(new Request("/a")));
         $this->assertTrue($matcher->match(new Request("/a/")));

@@ -15,6 +15,11 @@ class Regexp implements IMatcher
 {
     const DELIMITER = '#';
     protected $regexp;
+    /**
+     * mca MASK
+     * @var string
+     */
+    protected $mca_mask = '01';
     public $result = array();
 
     public function __construct($regexp)
@@ -36,5 +41,30 @@ class Regexp implements IMatcher
             $this->regexp = self::DELIMITER . $this->regexp . self::DELIMITER;
         }
         return !!preg_match($this->regexp, $url, $this->result);
+    }
+
+    /**
+     * 可以是两个数字,也可以是三个数字
+     * 二个数字使用CA模式,三个数字使用MCA
+     * @param $mask
+     * @return bool
+     * @throws \Exception
+     */
+    public function setMask($mask)
+    {
+        if (preg_match('/^\d\d\d?$/', $mask)) {
+            $this->mca_mask = $mask;
+            return true;
+        } else {
+            throw new \Exception("mask must be match \d{2,3}");
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public function getMask()
+    {
+        return $this->mca_mask;
     }
 }
