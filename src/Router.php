@@ -18,27 +18,28 @@ namespace Aw\Routing;
 
 use Aw\Http\Request;
 use Aw\Http\Response;
-use Aw\Routing\Map\Cmr2Ncm;
 use Aw\Routing\Matcher\Equal;
 use Aw\Routing\Matcher\Group;
-use Aw\Routing\Matcher\Ca;
-use Aw\Routing\Matcher\Mca;
 use Aw\Routing\Matcher\Method;
 use Aw\Routing\Matcher\OrGroup;
 use Aw\Routing\Matcher\Regexp;
 use Aw\Routing\Route\AtCall;
 use Aw\Routing\Route\Callback as CallbackRoute;
+use Aw\Routing\Route\Callback;
 use Aw\Routing\Route\IRoute;
-use Aw\Routing\Route\Ncm as NcmRoute;
 use Closure;
 use Exception;
 
 class Router
 {
+    const URL_MODE_EQUAL = 0;
+    const URL_MODE_PURE_REGEXP = 1;
+    const URL_MODE_REGEXP_WITH_PLACEHOLDER = 2;
+
     public $regexp = array(
-        ':num' => '#^\d+$#',
-        ':alpha' => '#^[a-zA-Z]+$#',
-        ':var' => '#^[a-zA-Z]\w*$#',
+        ':num' => '(\d+)',
+        ':alpha' => '([a-zA-Z]+)',
+        ':var' => '([a-zA-Z]\w*)',
     );
     protected $routes = array();
 
@@ -82,12 +83,12 @@ class Router
     public function isRegexpRoute($url)
     {
         if (substr($url, 0, 1) === Regexp::DELIMITER && substr($url, -1, 1) === Regexp::DELIMITER)
-            return 1;
+            return Router::URL_MODE_PURE_REGEXP;
         foreach ($this->regexp as $key => $regexp) {
             if (strpos($url, $key) !== false)
-                return 2;
+                return Router::URL_MODE_REGEXP_WITH_PLACEHOLDER;
         }
-        return 0;
+        return Router::URL_MODE_EQUAL;
     }
 
     /**
@@ -164,63 +165,32 @@ class Router
      */
     public function any($url, $action, $middleware = array(), $method = "*")
     {
-        if ($method === "*") {
-            $method = array("get", "post", "delete", "put");
-        }
         return $this->_request($method, $url, $action, $middleware);
-    }
-
-    /**
-     * 使用CA映射到NCM方式
-     * @param array $middleware
-     * @return IRoute
-     */
-    public function ca($middleware = array())
-    {
-        $matcher = new Ca();
-        $map = new Cmr2Ncm($matcher);
-        $route = new NcmRoute($matcher, $map);
-        return $this->add($route, $middleware);
-    }
-
-    /**
-     * 使用MCA映射到NCM方式
-     * @param array $middleware
-     * @return IRoute
-     */
-    public function mca($middleware = array())
-    {
-        $matcher = new Mca();
-        $map = new Cmr2Ncm($matcher);
-        $route = new NcmRoute($matcher, $map);
-        return $this->add($route, $middleware);
     }
 
     /**
      * 使用MCA映射到NCM方式
      * @param $regexp
+     * @param Closure|string $action
      * @param array $middleware
-     * @param null $map_callback
      * @return IRoute
      * @throws Exception
      */
-    public function match($regexp, $middleware = array(), $map_callback = null)
+    public function match($regexp, $action, $middleware = array())
     {
         if ($which = $this->isRegexpRoute($regexp)) {
-            if ($which == 2) {
+            if ($which == Router::URL_MODE_REGEXP_WITH_PLACEHOLDER) {
                 $regexp = Regexp::DELIMITER . strtr($regexp, $this->regexp) . Regexp::DELIMITER;
             }
         } else {
             throw new Exception("invalid regexp");
         }
         $matcher = new Regexp($regexp);
-        if ($map_callback instanceof Closure) {
-//            $matcher->match($this->request);
-            $map = $map_callback($matcher);
+        if ($action instanceof Closure) {
+            $route = new Callback($matcher, $action);
         } else {
-            $map = new Cmr2Ncm($matcher);
+            $route = new AtCall($matcher, $action);
         }
-        $route = new NcmRoute($matcher, $map);
         return $this->add($route, $middleware);
     }
 
@@ -236,12 +206,13 @@ class Router
     {
         $matcher = new Group();
         if ($which = $this->isRegexpRoute($url)) {
-            if ($which == 2) {
+            if ($which == Router::URL_MODE_REGEXP_WITH_PLACEHOLDER) {
                 $url = Regexp::DELIMITER . strtr($url, $this->regexp) . Regexp::DELIMITER;
             }
-            $matcher->add(new Regexp($url));
+//            var_dump($url);
+            $matcher->addUrlMatcher(new Regexp($url));
         } else {
-            $matcher->add(new Equal($url));
+            $matcher->addUrlMatcher(new Equal($url));
         }
         if (is_array($method)) {
             $or = new OrGroup();
@@ -250,7 +221,9 @@ class Router
             }
             $matcher->add($or);
         } else {
-            $matcher->add(new Method($method));
+            if ($method !== "*") {
+                $matcher->add(new Method($method));
+            }
         }
 
         if ($action instanceof Closure) {

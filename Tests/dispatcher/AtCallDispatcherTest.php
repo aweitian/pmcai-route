@@ -13,14 +13,12 @@ namespace {
 
     use Aw\Http\Request;
     use Aw\Routing\Dispatch\AtCall;
-    use Aw\Routing\Dispatch\Callback;
-    use Aw\Routing\Map\Ncm;
 
     class AtCallDispatcherTest extends \PHPUnit_Framework_TestCase
     {
         public function testDispatcher()
         {
-            $dispatcher = new AtCall("main@index","\\ax\\App");
+            $dispatcher = new AtCall("main@index", "\\ax\\App");
             $this->assertTrue($dispatcher->dispatch(new Request("/qq")));
             $this->assertTrue($dispatcher->getResponse()->getContent() === '/qq');
 

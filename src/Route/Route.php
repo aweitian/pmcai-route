@@ -10,9 +10,7 @@ namespace Aw\Routing\Route;
 
 
 use Aw\Http\Request;
-use Aw\Pipeline;
 use Aw\Routing\Dispatch\IDispatcher;
-use Aw\Routing\Map\INcm;
 use Aw\Routing\Matcher\IMatcher;
 
 abstract class Route implements IRoute
@@ -21,10 +19,7 @@ abstract class Route implements IRoute
      * @var IMatcher
      */
     public $matcher;
-    /**
-     * @var INcm
-     */
-    public $map;
+
     /**
      * @var IDispatcher
      */
@@ -45,29 +40,28 @@ abstract class Route implements IRoute
     {
         return $this->result;
     }
-
-    /**
-     * @param Request $request
-     * @param array $middleware
-     * @return bool
-     */
-    public function route(Request $request, array $middleware)
-    {
-        $this->beforeMatch($request);
-        if (!$this->matcher->match($request))
-            return false;
-        $this->beforeMap($this->matcher, $request);
-        $this->beforeDispatcher($this->map, $request);
-        $that = $this;
-        $pipe = new Pipeline();
-        return $pipe->send($request)
-            ->through($middleware)
-            ->then(function ($request) use ($that) {
-                $f = $that->dispatcher->dispatch($request);
-                $that->result = $that->dispatcher->getResponse();
-                return $f;
-            });
-    }
+//
+//    /**
+//     * @param Request $request
+//     * @param array $middleware
+//     * @return bool
+//     */
+//    public function route(Request $request, array $middleware)
+//    {
+//        $this->beforeMatch($request);
+//        if (!$this->matcher->match($request))
+//            return false;
+//        $this->beforeDispatcher($this->matcher, $request);
+//        $that = $this;
+//        $pipe = new Pipeline();
+//        return $pipe->send($request)
+//            ->through($middleware)
+//            ->then(function ($request) use ($that) {
+//                $f = $that->dispatcher->dispatch($request);
+//                $that->result = $that->dispatcher->getResponse();
+//                return $f;
+//            });
+//    }
 
     public function beforeMatch(Request $request)
     {
@@ -78,21 +72,12 @@ abstract class Route implements IRoute
         }
     }
 
-    public function beforeMap(IMatcher $matcher, Request $request)
-    {
-        if (!($this->hook instanceof RouteHook))
-            return;
-        foreach ($this->hook->getBeforeMapHook() as $callback) {
-            $callback($matcher, $request);
-        }
-    }
-
-    public function beforeDispatcher(INcm $map, Request $request)
+    public function beforeDispatcher(IMatcher $matcher, Request $request)
     {
         if (!($this->hook instanceof RouteHook))
             return;
         foreach ($this->hook->getBeforeDispatcherHook() as $callback) {
-            $callback($map, $request);
+            $callback($matcher, $request);
         }
     }
 

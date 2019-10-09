@@ -11,40 +11,47 @@ namespace Aw\Routing\Dispatch;
 
 use Aw\Http\Request;
 use Aw\Http\Response;
+use Exception;
 
 class AtCall implements IDispatcher
 {
-    const DEFAULT_ACTION = "index";
-    protected $callback;
-    protected $namespace;
+    public $callback;
     protected $response;
 
     /**
-     * @param mixed $call
-     * @param string $namespace
+     * @param string $call
+     * @param string $default_namespace
+     * @param string $default_action
+     * @throws Exception
      */
-    public function __construct($call, $namespace = "\\App\\Controller")
+    public function __construct($call, $default_namespace = "\\App\\Http", $default_action = "index")
     {
+        if (!is_string($call)) {
+            throw new Exception("at call only support string");
+        }
         $this->callback = $call;
-        $this->namespace = $namespace;
+        if (substr($this->callback, 0, 1) !== "\\") {
+            $this->callback = $default_namespace . '\\' . $call;
+        }
+        if (strpos($this->callback, '@') === false) {
+            $this->callback = $this->callback . "@" . $default_action;
+        }
     }
 
 
     /**
      * @param Request $request
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
     public function dispatch(Request $request)
     {
-        $arr = explode("@", $this->callback);
-        if (count($arr) > 1) {
-            $cls = $this->handleNamespace($arr[0]);
-            $act = $arr[1];
-        } else {
-            $cls = $this->handleNamespace($this->callback);
-            $act = self::DEFAULT_ACTION;
+        $t = explode('@', $this->callback);
+        if (count($t) != 2) {
+            throw new Exception('invalid at call:' . $this->callback);
         }
+        $cls = $t[0];
+        $act = $t[1];
         if (!class_exists($cls)) {
             $this->response = new Response("class {$cls} is not found", 404);
             return false;
@@ -73,15 +80,6 @@ class AtCall implements IDispatcher
             $this->response = new Response($ret);
         }
         return true;
-    }
-
-    protected function handleNamespace($cls)
-    {
-        if (substr($cls, 0, 1) == "\\") {
-            return $cls;
-        } else {
-            return rtrim($this->namespace, '\\') . '\\' . $cls;
-        }
     }
 
     /**

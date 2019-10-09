@@ -8,6 +8,8 @@
 
 namespace Aw\Routing\Route;
 
+use Aw\Http\Request;
+use Aw\Pipeline;
 use Aw\Routing\Matcher\IMatcher;
 
 class Callback extends Route
@@ -19,8 +21,29 @@ class Callback extends Route
         $this->matcher = $matcher;
         $this->callback = $callback;
         $this->newHook();
-        $this->hook->addBeforeDispatcherHook(function () {
-            $this->dispatcher = new \Aw\Routing\Dispatch\Callback($this->callback);
-        });
+    }
+
+
+    /**
+     * @param Request $request
+     * @param array $middleware
+     * @return bool
+     */
+    public function route(Request $request, array $middleware)
+    {
+        $this->beforeMatch($request);
+        if (!$this->matcher->match($request))
+            return false;
+        $this->dispatcher = new \Aw\Routing\Dispatch\Callback($this->callback);
+        $this->beforeDispatcher($this->matcher, $request);
+        $that = $this;
+        $pipe = new Pipeline();
+        return $pipe->send($request)
+            ->through($middleware)
+            ->then(function ($request) use ($that) {
+                $f = $that->dispatcher->dispatch($request);
+                $that->result = $that->dispatcher->getResponse();
+                return $f;
+            });
     }
 }

@@ -14,18 +14,19 @@ namespace {
     use Aw\Http\Request;
     use Aw\Routing\Dispatch\Callback;
     use Aw\Routing\Map\Ncm;
+    use Aw\Routing\Matcher\Regexp;
 
     class CallbackDispatcherTest extends \PHPUnit_Framework_TestCase
     {
         public function testDispatcher()
         {
-            $dispatcher = new Callback(function (Request $request){
+            $dispatcher = new Callback(function (Request $request) {
                 return $request->getPath();
             });
             $this->assertTrue($dispatcher->dispatch(new Request("/qq")));
             $this->assertTrue($dispatcher->getResponse()->getContent() === '/qq');
 
-            $dispatcher = new Callback(function (Request $request){
+            $dispatcher = new Callback(function (Request $request) {
                 return $request->getPath() === "/non_exist";
             });
             $this->assertFalse($dispatcher->dispatch(new Request("/qq")));

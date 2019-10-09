@@ -11,20 +11,24 @@ namespace Aw\Routing\Dispatch;
 
 use Aw\Http\Request;
 use Aw\Http\Response;
+use Aw\Routing\Matcher\IMatcher;
 
 class Callback implements IDispatcher
 {
     protected $callback;
     protected $response;
+//    protected $matcher;
 
     /**
+     * 回调函数第一个参数是request,
+//     * 第二个参数是matcher
      * @param mixed $call
      */
-    public function __construct($call)
+    public function __construct( $call)
     {
+//        $this->matcher = $matcher;
         $this->callback = $call;
     }
-
 
     public function dispatch(Request $request)
     {

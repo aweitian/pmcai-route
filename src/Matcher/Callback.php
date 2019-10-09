@@ -25,7 +25,6 @@ class Callback implements IMatcher
         $this->callback = $callback;
     }
 
-
     /**
      * @param Request $request
      * @return bool

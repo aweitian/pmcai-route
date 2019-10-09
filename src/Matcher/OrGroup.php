@@ -17,9 +17,25 @@ class OrGroup implements IMatcher
 
     protected $array = array();
 
+    protected $url_matcher = null;
+
+    public $hasUrlMatcher = false;
+
     public function add(IMatcher $matcher)
     {
         $this->array[] = $matcher;
+    }
+
+    public function addUrlMatcher(IMatcher $matcher)
+    {
+        $this->hasUrlMatcher = true;
+        $this->url_matcher = $matcher;
+        $this->add($matcher);
+    }
+
+    public function getUrlMatcher()
+    {
+        return $this->url_matcher;
     }
 
     /**
