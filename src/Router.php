@@ -31,6 +31,7 @@ use Aw\Routing\Route\Callback as CallbackRoute;
 use Aw\Routing\Route\IRoute;
 use Aw\Routing\Route\Ncm as NcmRoute;
 use Closure;
+use Exception;
 
 class Router
 {
@@ -201,7 +202,7 @@ class Router
      * @param array $middleware
      * @param null $map_callback
      * @return IRoute
-     * @throws \Exception
+     * @throws Exception
      */
     public function match($regexp, $middleware = array(), $map_callback = null)
     {
@@ -210,7 +211,7 @@ class Router
                 $regexp = Regexp::DELIMITER . strtr($regexp, $this->regexp) . Regexp::DELIMITER;
             }
         } else {
-            throw new \Exception("invalid regexp");
+            throw new Exception("invalid regexp");
         }
         $matcher = new Regexp($regexp);
         if ($map_callback instanceof Closure) {
@@ -229,7 +230,7 @@ class Router
      * @param $action
      * @param $middleware
      * @return IRoute
-     * @throws \Exception
+     * @throws Exception
      */
     protected function _request($method, $url, $action, $middleware)
     {
@@ -257,7 +258,7 @@ class Router
         } else if (is_string($action)) {
             $route = new AtCall($matcher, $action);
         } else {
-            throw new \Exception("invalid action");
+            throw new Exception("invalid action");
         }
         return $this->add($route, $middleware);
     }
