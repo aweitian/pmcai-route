@@ -14,11 +14,11 @@
  * 请求 -> 匹配 -> 前置中间件 -> 业务函数 -> 后置中间件 -> 响应
  */
 
-namespace Aw\Routing\Router;
+namespace Aw\Routing;
 
 use Aw\Http\Request;
 use Aw\Http\Response;
-use Aw\Routing\Map\Ncm;
+use Aw\Routing\Map\Cmr2Ncm;
 use Aw\Routing\Matcher\Equal;
 use Aw\Routing\Matcher\Group;
 use Aw\Routing\Matcher\Ca;
@@ -43,6 +43,7 @@ class Router
 
     protected $request;
 
+    public $handle_404_callbacks = array();
 
     /**
      * Router constructor.
@@ -51,6 +52,11 @@ class Router
     public function __construct(Request $request = null)
     {
         $this->request = $request;
+    }
+
+    public function add404Handler(Closure $closure)
+    {
+        $this->handle_404_callbacks[] = $closure;
     }
 
     /**
@@ -95,7 +101,7 @@ class Router
      */
     public function get($url, $action, $middleware = array())
     {
-        return $this->request('get', $url, $action, $middleware);
+        return $this->_request('get', $url, $action, $middleware);
     }
 
     /**
@@ -110,7 +116,7 @@ class Router
      */
     public function post($url, $action, $middleware = array())
     {
-        return $this->request('post', $url, $action, $middleware);
+        return $this->_request('post', $url, $action, $middleware);
     }
 
     /**
@@ -125,7 +131,7 @@ class Router
      */
     public function delete($url, $action, $middleware = array())
     {
-        return $this->request('delete', $url, $action, $middleware);
+        return $this->_request('delete', $url, $action, $middleware);
     }
 
 
@@ -141,7 +147,7 @@ class Router
      */
     public function put($url, $action, $middleware = array())
     {
-        return $this->request('put', $url, $action, $middleware);
+        return $this->_request('put', $url, $action, $middleware);
     }
 
     /**
@@ -160,24 +166,18 @@ class Router
         if ($method === "*") {
             $method = array("get", "post", "delete", "put");
         }
-        return $this->request($method, $url, $action, $middleware);
+        return $this->_request($method, $url, $action, $middleware);
     }
 
     /**
      * 使用CA映射到NCM方式
      * @param array $middleware
-     * @param null $map_callback
      * @return IRoute
      */
-    public function ca($middleware = array(), $map_callback = null)
+    public function ca($middleware = array())
     {
         $matcher = new Ca();
-        if ($map_callback instanceof Closure) {
-            $matcher->match($this->request);
-            $map = $map_callback();
-        } else {
-            $map = new Ncm($matcher);
-        }
+        $map = new Cmr2Ncm($matcher);
         $route = new NcmRoute($matcher, $map);
         return $this->add($route, $middleware);
     }
@@ -185,18 +185,12 @@ class Router
     /**
      * 使用MCA映射到NCM方式
      * @param array $middleware
-     * @param null $map_callback
      * @return IRoute
      */
-    public function mca($middleware = array(), $map_callback = null)
+    public function mca($middleware = array())
     {
         $matcher = new Mca();
-        if ($map_callback instanceof Closure) {
-//            $matcher->match($this->request);
-            $map = $map_callback($matcher);
-        } else {
-            $map = new Ncm($matcher);
-        }
+        $map = new Cmr2Ncm($matcher);
         $route = new NcmRoute($matcher, $map);
         return $this->add($route, $middleware);
     }
@@ -223,7 +217,7 @@ class Router
 //            $matcher->match($this->request);
             $map = $map_callback($matcher);
         } else {
-            $map = new Ncm($matcher);
+            $map = new Cmr2Ncm($matcher);
         }
         $route = new NcmRoute($matcher, $map);
         return $this->add($route, $middleware);
@@ -237,7 +231,7 @@ class Router
      * @return IRoute
      * @throws \Exception
      */
-    protected function request($method, $url, $action, $middleware)
+    protected function _request($method, $url, $action, $middleware)
     {
         $matcher = new Group();
         if ($which = $this->isRegexpRoute($url)) {
@@ -284,6 +278,9 @@ class Router
             }
         }
         $r = new Response('Page not found', 404);
+        foreach ($this->handle_404_callbacks as $callback) {
+            $callback($this->request);
+        }
         return $r;
     }
 
@@ -296,7 +293,7 @@ class Router
     {
         $this->routes[] = array(
             'route' => $route,
-            'middleware' => $middleware
+            'middleware' => $middleware,
         );
         return $route;
     }

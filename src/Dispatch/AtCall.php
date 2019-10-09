@@ -23,7 +23,7 @@ class AtCall implements IDispatcher
      * @param mixed $call
      * @param string $namespace
      */
-    public function __construct($call, $namespace = "\\App\\Controller\\")
+    public function __construct($call, $namespace = "\\App\\Controller")
     {
         $this->callback = $call;
         $this->namespace = $namespace;
@@ -45,18 +45,27 @@ class AtCall implements IDispatcher
             $cls = $this->handleNamespace($this->callback);
             $act = self::DEFAULT_ACTION;
         }
-
+        if (!class_exists($cls)) {
+            $this->response = new Response("class {$cls} is not found", 404);
+            return false;
+        }
         $rc = new \ReflectionClass($cls);
         if (!$rc->hasMethod($act)) {
             $this->response = new Response("{$act} in {$cls} is not found", 404);
             return false;
         }
-        $method = $rc->getMethod($cls);
+        $method = $rc->getMethod($act);
         if (!$method->isPublic()) {
             $this->response = new Response("{$act} in {$cls} should be public", 403);
             return false;
         }
-        $inst = $rc->newInstance($request);
+
+        if ($rc->hasMethod("__construct")) {
+            $inst = $rc->newInstance($request);
+        } else {
+            $inst = $rc->newInstance();
+        }
+
         $ret = $method->invoke($inst);
         if ($ret instanceof Response) {
             $this->response = $ret;
@@ -71,7 +80,7 @@ class AtCall implements IDispatcher
         if (substr($cls, 0, 1) == "\\") {
             return $cls;
         } else {
-            return $this->namespace . $cls;
+            return rtrim($this->namespace, '\\') . '\\' . $cls;
         }
     }
 

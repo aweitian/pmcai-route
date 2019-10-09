@@ -18,10 +18,15 @@ interface IRoute
      * @param array $middleware
      * @return bool
      */
-    public function route(Request $request,array $middleware);
+    public function route(Request $request, array $middleware);
 
     /**
      * @return Response
      */
     public function getDispatchResult();
+
+    /**
+     * @return RouteHook
+     */
+    public function getRouteHook();
 }

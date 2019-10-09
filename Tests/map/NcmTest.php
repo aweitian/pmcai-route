@@ -24,7 +24,7 @@ class NcmTest extends \PHPUnit_Framework_TestCase
         $c_default = 'def';
         $a_default = "idx";
         $m_default = 'md';
-        $map = new \Aw\Routing\Map\Ncm($matcher, $class_pattern, $method_pattern, $namespace_pattern, $c_default, $a_default, $m_default);
+        $map = new \Aw\Routing\Map\Cmr2Ncm($matcher, $class_pattern, $method_pattern, $namespace_pattern, $c_default, $a_default, $m_default);
         $this->assertTrue($matcher->match(new Request("/api/")));
         $map->map();
 
@@ -50,7 +50,7 @@ class NcmTest extends \PHPUnit_Framework_TestCase
         $c_default = 'def';
         $a_default = "idx";
         $m_default = 'md';
-        $map = new \Aw\Routing\Map\Ncm($matcher, $class_pattern, $method_pattern, $namespace_pattern, $c_default, $a_default, $m_default);
+        $map = new \Aw\Routing\Map\Cmr2Ncm($matcher, $class_pattern, $method_pattern, $namespace_pattern, $c_default, $a_default, $m_default);
         $this->assertTrue($matcher->match(new Request("/api/user")));
         $map->map();
 
@@ -76,7 +76,7 @@ class NcmTest extends \PHPUnit_Framework_TestCase
         $c_default = 'def';
         $a_default = "idx";
         $m_default = 'md';
-        $map = new \Aw\Routing\Map\Ncm($matcher, $class_pattern, $method_pattern, $namespace_pattern, $c_default, $a_default, $m_default);
+        $map = new \Aw\Routing\Map\Cmr2Ncm($matcher, $class_pattern, $method_pattern, $namespace_pattern, $c_default, $a_default, $m_default);
         $this->assertTrue($matcher->match(new Request("/api/user/add")));
         $map->map();
 
@@ -106,7 +106,7 @@ class NcmTest extends \PHPUnit_Framework_TestCase
         $c_default = 'main';
         $a_default = "index";
         $m_default = 'default';
-        $map = new \Aw\Routing\Map\Ncm($matcher, $class_pattern, $method_pattern, $namespace_pattern, $c_default, $a_default, $m_default);
+        $map = new \Aw\Routing\Map\Cmr2Ncm($matcher, $class_pattern, $method_pattern, $namespace_pattern, $c_default, $a_default, $m_default);
         $this->assertTrue($matcher->match(new Request("/task/")));
         $map->map();
 
@@ -132,7 +132,7 @@ class NcmTest extends \PHPUnit_Framework_TestCase
         $c_default = 'def';
         $a_default = "idx";
         $m_default = 'md';
-        $map = new \Aw\Routing\Map\Ncm($matcher, $class_pattern, $method_pattern, $namespace_pattern, $c_default, $a_default, $m_default);
+        $map = new \Aw\Routing\Map\Cmr2Ncm($matcher, $class_pattern, $method_pattern, $namespace_pattern, $c_default, $a_default, $m_default);
         $this->assertTrue($matcher->match(new Request("/api/user")));
         $map->map();
 
@@ -158,7 +158,7 @@ class NcmTest extends \PHPUnit_Framework_TestCase
         $c_default = 'def';
         $a_default = "idx";
         $m_default = 'md';
-        $map = new \Aw\Routing\Map\Ncm($matcher, $class_pattern, $method_pattern, $namespace_pattern, $c_default, $a_default, $m_default);
+        $map = new \Aw\Routing\Map\Cmr2Ncm($matcher, $class_pattern, $method_pattern, $namespace_pattern, $c_default, $a_default, $m_default);
         $this->assertTrue($matcher->match(new Request("/api/user/add")));
         $map->map();
 

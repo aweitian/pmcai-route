@@ -56,7 +56,11 @@ class Ncm implements IDispatcher
             $this->response = new Response("{$this->ncm->getMethod()}  in {$full_class} should be public", 403);
             return false;
         }
-        $inst = $rc->newInstance($request);
+        if ($rc->hasMethod("__construct")) {
+            $inst = $rc->newInstance($request);
+        } else {
+            $inst = $rc->newInstance();
+        }
         $ret = $method->invoke($inst, $this->ncm);
         if ($ret instanceof Response) {
             $this->response = $ret;
