@@ -11,7 +11,7 @@ namespace Aw\Routing\Matcher;
 
 use Aw\Http\Request;
 
-class Equal implements IMatcher
+class Equal extends Matcher
 {
     protected $url;
 
@@ -33,5 +33,10 @@ class Equal implements IMatcher
     {
         $url = $request->getPath();
         return rtrim($url, '/') === rtrim($this->url, '/');
+    }
+
+    public function hasUrlMatcher()
+    {
+        return true;
     }
 }

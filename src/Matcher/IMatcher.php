@@ -18,4 +18,8 @@ interface IMatcher
      * @return bool
      */
     public function match(Request $request);
+
+    public function getMatchResult();
+
+    public function hasUrlMatcher();
 }

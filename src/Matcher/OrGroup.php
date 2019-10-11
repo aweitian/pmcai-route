@@ -11,32 +11,28 @@ namespace Aw\Routing\Matcher;
 
 use Aw\Http\Request;
 
-class OrGroup implements IMatcher
+class OrGroup extends Matcher
 {
     protected $url;
 
     protected $array = array();
 
-    protected $url_matcher = null;
-
-    public $hasUrlMatcher = false;
-
     public function add(IMatcher $matcher)
     {
         $this->array[] = $matcher;
     }
-
-    public function addUrlMatcher(IMatcher $matcher)
-    {
-        $this->hasUrlMatcher = true;
-        $this->url_matcher = $matcher;
-        $this->add($matcher);
-    }
-
-    public function getUrlMatcher()
-    {
-        return $this->url_matcher;
-    }
+//
+//    public function addUrlMatcher(IMatcher $matcher)
+//    {
+//        $this->hasUrlMatcher = true;
+//        $this->url_matcher = $matcher;
+//        $this->add($matcher);
+//    }
+//
+//    public function getUrlMatcher()
+//    {
+//        return $this->url_matcher;
+//    }
 
     /**
      * @param Request $request
@@ -44,11 +40,20 @@ class OrGroup implements IMatcher
      */
     public function match(Request $request)
     {
+        /**
+         * @var IMatcher $matcher
+         */
         if (empty($this->array))
             return false;
         foreach ($this->array as $matcher) {
-            if ($matcher->match($request))
+            if ($matcher->match($request)) {
+                //url matcher 向上传递
+                if ($matcher->hasUrlMatcher()) {
+                    $this->contain_url_matcher = true;
+                    $this->result = $matcher->getMatchResult();
+                }
                 return true;
+            }
         }
         return false;
     }

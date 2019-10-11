@@ -11,7 +11,7 @@ namespace Aw\Routing\Matcher;
 
 use Aw\Http\Request;
 
-class Method implements IMatcher
+class Method extends Matcher
 {
     protected $method = 'GET';
 
@@ -27,5 +27,10 @@ class Method implements IMatcher
     public function match(Request $request)
     {
         return $request->getMethod() === $this->method;
+    }
+
+    public function hasUrlMatcher()
+    {
+        return false;
     }
 }

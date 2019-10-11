@@ -17,26 +17,25 @@ class Callback implements IDispatcher
 {
     protected $callback;
     protected $response;
-//    protected $matcher;
 
     /**
      * 回调函数第一个参数是request,
-//     * 第二个参数是matcher
+     * //     * 第二个参数是matches
      * @param mixed $call
      */
-    public function __construct( $call)
+    public function __construct($call)
     {
 //        $this->matcher = $matcher;
         $this->callback = $call;
     }
 
-    public function dispatch(Request $request)
+    public function dispatch(Request $request, array $matches = array())
     {
         $callback = $this->callback;
         if (!is_callable($callback)) {
             return false;
         }
-        $ret = $callback($request);
+        $ret = $callback($request, $matches);
         if ($ret === false)
             return false;
         if ($ret instanceof Response) {

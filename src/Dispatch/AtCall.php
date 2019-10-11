@@ -38,13 +38,13 @@ class AtCall implements IDispatcher
         }
     }
 
-
     /**
      * @param Request $request
+     * @param array $matches
      * @return bool
      * @throws Exception
      */
-    public function dispatch(Request $request)
+    public function dispatch(Request $request, array $matches = array())
     {
         $t = explode('@', $this->callback);
         if (count($t) != 2) {
@@ -73,7 +73,7 @@ class AtCall implements IDispatcher
             $inst = $rc->newInstance();
         }
 
-        $ret = $method->invoke($inst);
+        $ret = $method->invoke($inst, $matches);
         if ($ret instanceof Response) {
             $this->response = $ret;
         } else {

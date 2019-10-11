@@ -12,7 +12,7 @@ namespace Aw\Routing\Matcher;
 use Aw\Http\Request;
 use Closure;
 
-class Callback implements IMatcher
+class Callback extends Matcher
 {
     protected $callback;
 
@@ -33,6 +33,11 @@ class Callback implements IMatcher
     {
         $callback = $this->callback;
         if (!is_callable($callback)) return false;
-        return !!$callback($request);
+        return !!$callback($request, $this);
+    }
+
+    public function hasUrlMatcher()
+    {
+        return true;
     }
 }

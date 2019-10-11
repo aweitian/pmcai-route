@@ -26,6 +26,7 @@ use Aw\Routing\Matcher\Regexp;
 use Aw\Routing\Route\AtCall;
 use Aw\Routing\Route\Callback as CallbackRoute;
 use Aw\Routing\Route\Callback;
+use Aw\Routing\Matcher\Callback as MatcherCallback;
 use Aw\Routing\Route\IRoute;
 use Closure;
 use Exception;
@@ -37,9 +38,12 @@ class Router
     const URL_MODE_REGEXP_WITH_PLACEHOLDER = 2;
 
     public $regexp = array(
-        ':num' => '(\d+)',
-        ':alpha' => '([a-zA-Z]+)',
-        ':var' => '([a-zA-Z]\w*)',
+        ':num' => '(\d+)?',
+        ':alpha' => '([a-zA-Z]+)?',
+        ':var' => '([a-zA-Z]\w*)?',
+        ':NUM' => '(\d+)',
+        ':ALPHA' => '([a-zA-Z]+)',
+        ':VAR' => '([a-zA-Z]\w*)',
     );
     protected $routes = array();
 
@@ -89,6 +93,63 @@ class Router
                 return Router::URL_MODE_REGEXP_WITH_PLACEHOLDER;
         }
         return Router::URL_MODE_EQUAL;
+    }
+
+    public function ca($middleware = array(), $action = "\\App\\Http\\Default\\(:1)@(:2)")
+    {
+        $matcher = new MatcherCallback(function (Request $request, MatcherCallback $that) {
+            $path = $request->getPath();
+            $path = trim($path, "/");
+            if ($path === "") {
+                $that->result = array("/");
+                return true;
+            }
+            $that->result = explode("/", $path);
+            array_unshift($that->result, $request->getPath());
+            if (count($that->result) === 2) {
+                return !!preg_match('/^[a-zA-Z]\w*$/', $that->result[1]);
+            } else if (count($that->result) === 3) {
+                return !!preg_match('/^[a-zA-Z]\w*$/', $that->result[1]) && !!preg_match('/^[a-zA-Z]\w*$/', $that->result[2]);
+            }
+            return false;
+        });
+        $route = new AtCall($matcher, $action);
+        return $this->add($route, $middleware);
+    }
+
+    /**
+     * mca module不能为空
+     * module在匹配数组中会自动首字母大写
+     * 2如果不带默认值,会自动设置默认值为main
+     * 3如果不带默认值,会自动设置默认值为index
+     * @param array $middleware
+     * @param string $action
+     * @return IRoute
+     */
+    public function mca($middleware = array(), $action = "\\App\\Http\\(:1)\\(:2)@(:3)")
+    {
+        $action = strtr($action, array(
+            '(:2)' => '(:2|main)',
+            '(:3)' => '(:3|index)',
+        ));
+        $matcher = new MatcherCallback(function (Request $request, MatcherCallback $that) {
+            $path = $request->getPath();
+            $path = trim($path, "/");
+            if ($path === "") return false;
+            $that->result = explode("/", $path);
+            $that->result[0] = ucfirst($that->result[0]);
+            array_unshift($that->result, $request->getPath());
+            if (count($that->result) === 2) {
+                return !!preg_match('/^[a-zA-Z]\w*$/', $that->result[1]);
+            } else if (count($that->result) === 3) {
+                return !!preg_match('/^[a-zA-Z]\w*$/', $that->result[1]) && !!preg_match('/^[a-zA-Z]\w*$/', $that->result[2]);
+            } else if (count($that->result) === 4) {
+                return !!preg_match('/^[a-zA-Z]\w*$/', $that->result[1]) && !!preg_match('/^[a-zA-Z]\w*$/', $that->result[2]) && !!preg_match('/^[a-zA-Z]\w*$/', $that->result[3]);
+            }
+            return false;
+        });
+        $route = new AtCall($matcher, $action);
+        return $this->add($route, $middleware);
     }
 
     /**
@@ -210,9 +271,9 @@ class Router
                 $url = Regexp::DELIMITER . strtr($url, $this->regexp) . Regexp::DELIMITER;
             }
 //            var_dump($url);
-            $matcher->addUrlMatcher(new Regexp($url));
+            $matcher->add(new Regexp($url));
         } else {
-            $matcher->addUrlMatcher(new Equal($url));
+            $matcher->add(new Equal($url));
         }
         if (is_array($method)) {
             $or = new OrGroup();

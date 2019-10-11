@@ -63,21 +63,21 @@ abstract class Route implements IRoute
 //            });
 //    }
 
-    public function beforeMatch(Request $request)
+    public function beforeMatch(Request $request, IMatcher $matcher)
     {
         if (!($this->hook instanceof RouteHook))
             return;
         foreach ($this->hook->getBeforeMatcherHook() as $callback) {
-            $callback($request);
+            $callback($request, $matcher);
         }
     }
 
-    public function beforeDispatcher(IMatcher $matcher, Request $request)
+    public function beforeDispatcher(Request $request, IMatcher $matcher, IDispatcher $dispatcher)
     {
         if (!($this->hook instanceof RouteHook))
             return;
         foreach ($this->hook->getBeforeDispatcherHook() as $callback) {
-            $callback($matcher, $request);
+            $callback($request, $matcher, $dispatcher);
         }
     }
 

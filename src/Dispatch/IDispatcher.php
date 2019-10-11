@@ -16,9 +16,10 @@ interface IDispatcher
 {
     /**
      * @param Request $request
+     * @param array $matches
      * @return bool
      */
-    public function dispatch(Request $request);
+    public function dispatch(Request $request, array $matches);
 
     /**
      * @return Response

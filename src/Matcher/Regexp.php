@@ -11,7 +11,7 @@ namespace Aw\Routing\Matcher;
 
 use Aw\Http\Request;
 
-class Regexp implements IMatcher
+class Regexp extends Matcher
 {
     const DELIMITER = '#';
     protected $regexp;
@@ -66,5 +66,10 @@ class Regexp implements IMatcher
     public function getMask()
     {
         return $this->mca_mask;
+    }
+
+    public function hasUrlMatcher()
+    {
+        return true;
     }
 }
