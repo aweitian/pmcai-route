@@ -1,6 +1,6 @@
 # 路由第三版
 
-![Image text](https://raw.githubusercontent.com/aweitian/route/master/readme.png)
+![Image text](https://raw.githubusercontent.com/aweitian/route/master/md.png)
 
 
 ## 安装组件
