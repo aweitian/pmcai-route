@@ -12,6 +12,7 @@
 namespace {
 
     use Aw\Http\Request;
+    use Aw\Http\Response;
     use Aw\Routing\Dispatch\AtCall;
     use Aw\Routing\Matcher\Callback;
     use Aw\Routing\Matcher\IMatcher;
@@ -332,6 +333,21 @@ namespace {
 
             $res = $router->run();
             $this->assertEquals(array("/p/q/r", "p", "q", "r"), $res->getContent());
+        }
+
+        public function testHandle404()
+        {
+            $router = new Router(new Request("/q/bar/d12.html"));
+            $that = $this;
+            $router->match('#^/([a-zA-Z]\w*)/([a-zA-Z]\w*)/(\d+)\.html$#', function (Request $request, array $matches) use ($that) {
+                return 'never will be executed';
+            });
+            $router->add404Handler(function (Request $request, Response $response) {
+                $response->setStatusCode(200);
+                $response->setContent("hook 404");
+            });
+            $res = $router->run();
+            $this->assertEquals("hook 404", $res->getContent());
         }
     }
 }

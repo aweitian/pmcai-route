@@ -314,7 +314,7 @@ class Router
         }
         $r = new Response('Page not found', 404);
         foreach ($this->handle_404_callbacks as $callback) {
-            $callback($this->request);
+            $callback($this->request, $r);
         }
         return $r;
     }
