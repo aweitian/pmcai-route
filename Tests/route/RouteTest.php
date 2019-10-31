@@ -295,6 +295,36 @@ namespace {
             });
             $res = $router->run();
             $this->assertEquals("ls", $res->getContent());
+
+
+            $router = new Router(new Request("/foo/bar/lol"));
+            $route = $router->get("/:var/:var", "\\app\\(:1)@(:2)");
+            $that = $this;
+            $route->getRouteHook()->addBeforeMatcherHook(function (Request $request, IMatcher $matcher) use ($that) {
+                $that->assertEquals("/foo/bar/lol", $request->getPath());
+                $that->assertFalse($matcher->hasUrlMatcher());
+            });
+            $route->getRouteHook()->addBeforeDispatcherHook(function (Request $request, IMatcher $matcher, AtCall $dispatcher) use ($that) {
+                //匹配完成
+                $that->assertTrue($matcher->hasUrlMatcher());
+            });
+            $res = $router->run();
+            $this->assertEquals(404, $res->getStatusCode());
+
+
+            $router = new Router(new Request("/app/foo/bar"));
+            $route = $router->get("/:var/:var/:var", "\\(:1)\\(:2)@(:3)");
+            $that = $this;
+            $route->getRouteHook()->addBeforeMatcherHook(function (Request $request, IMatcher $matcher) use ($that) {
+                $that->assertEquals("/app/foo/bar", $request->getPath());
+                $that->assertFalse($matcher->hasUrlMatcher());
+            });
+            $route->getRouteHook()->addBeforeDispatcherHook(function (Request $request, IMatcher $matcher, AtCall $dispatcher) use ($that) {
+                //匹配完成
+                $that->assertTrue($matcher->hasUrlMatcher());
+            });
+            $res = $router->run();
+            $this->assertEquals('ls', $res->getContent());
         }
 
         public function testGet()
