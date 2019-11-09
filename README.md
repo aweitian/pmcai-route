@@ -17,8 +17,10 @@
  
 ## 派遣
  - 命名空间\类@方法
- - 回调函数
-
+ - 回调函数(request,matches,detect),
+ > 当函数参数小于3个时,会被封闭,添加成三个参数,并添加检测为TRUE
+ > 当函数参数等于3个时,自己写DETECT逻辑
+ 
 ## 路由
  - 命名空间\类@方法
  - 回调函数
@@ -38,6 +40,6 @@
 ## 路由器URL/action参数
  - url 以#开头和结尾 或者 路径中包包含  :num :alpha :var 用正则匹配 
  - action 支持callback 或者  \namespace\class@method
- - callback of action 第一个参数是request,第二个参数是matches
+ - callback of action 第一个参数是request,第二个参数是matches,第三个参数是BOOL,表示此次是否是检测,
  - atCall of action 第一个参数是matches ,类构造函数的参数是request
     

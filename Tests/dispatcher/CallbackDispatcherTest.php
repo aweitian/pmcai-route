@@ -20,16 +20,24 @@ namespace {
     {
         public function testDispatcher()
         {
-            $dispatcher = new Callback(function (Request $request) {
+            $dispatcher = new Callback(function (Request $request, array $matches, $isDetect) {
+                if ($isDetect) return true;
                 return $request->getPath();
             });
-            $this->assertTrue($dispatcher->dispatch(new Request("/qq")));
-            $this->assertTrue($dispatcher->getResponse()->getContent() === '/qq');
+            $this->assertTrue($dispatcher->detect(new Request("/qq")));
+            $this->assertTrue($dispatcher->dispatch()->getContent() === '/qq');
 
-            $dispatcher = new Callback(function (Request $request) {
+            $dispatcher = new Callback(function (Request $request, array $matches, $isDetect) {
+                if ($isDetect) return false;
                 return $request->getPath() === "/non_exist";
             });
-            $this->assertFalse($dispatcher->dispatch(new Request("/qq")));
+            $this->assertFalse($dispatcher->detect(new Request("/qq")));
+
+            $dispatcher = new Callback(function (Request $request, array $matches, $isDetect) {
+                if ($isDetect) return false;
+                return $request->getPath();
+            });
+            $this->assertFalse($dispatcher->detect(new Request("/qq")));
         }
     }
 }

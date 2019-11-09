@@ -19,17 +19,17 @@ namespace {
         public function testDispatcher()
         {
             $dispatcher = new AtCall("main@index", "\\ax\\App");
-            $this->assertTrue($dispatcher->dispatch(new Request("/qq")));
-            $this->assertTrue($dispatcher->getResponse()->getContent() === '/qq');
+            $this->assertTrue($dispatcher->detect(new Request("/qq")));
+            $this->assertTrue($dispatcher->dispatch()->getContent() === '/qq');
 
             $dispatcher = new AtCall("class@method");
-            $this->assertFalse($dispatcher->dispatch(new Request("/qq")));
+            $this->assertFalse($dispatcher->detect(new Request("/qq")));
 
             $dispatcher = new AtCall("\\ax\\App\\main@index");
-            $this->assertTrue($dispatcher->dispatch(new Request("/qq")));
+            $this->assertTrue($dispatcher->detect(new Request("/qq")));
 
             $dispatcher = new AtCall("\\ax\\App\\main");
-            $this->assertTrue($dispatcher->dispatch(new Request("/qq")));
+            $this->assertTrue($dispatcher->detect(new Request("/qq")));
         }
     }
 }
