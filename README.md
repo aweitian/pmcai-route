@@ -8,6 +8,12 @@
 > composer require aweitian/route
 >
 
+## 生命周期
+1. 匹配
+2. 派遣检测
+3. 中间件
+4. 派遣调用
+
 ## 匹配
  - 函数
  - 相等
