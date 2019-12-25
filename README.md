@@ -47,5 +47,5 @@
  - url 以#开头和结尾 或者 路径中包包含  :num :alpha :var 用正则匹配 
  - action 支持callback 或者  \namespace\class@method
  - callback of action 第一个参数是request,第二个参数是matches,第三个参数是BOOL,表示此次是否是检测,
- - atCall of action 第一个参数是matches ,类构造函数的参数是request
+ - atCall of action 第一个参数是matches ,类构造函数的参数是request,第二个参数是matches
     
